@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api")
 class HttpClientController(private val httpClient: HttpClientService) {
 
-    @PostMapping("/health-check")
+    @GetMapping("/health-check")
     fun checkUrl(@RequestParam url: String): Map<String, Any> {
         val isAlive = httpClient.healthCheck(url)
         return mapOf("url" to url, "isAlive" to isAlive)

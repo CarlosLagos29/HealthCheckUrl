@@ -24,6 +24,8 @@ dependencies {
         exclude(group = "org.apache.logging.log4j", module = "log4j-to-slf4j")
     }
 
+    implementation ("org.springframework.boot:spring-boot-starter-webflux")
+
     // Soporte para Kotlin en Spring Boot
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
