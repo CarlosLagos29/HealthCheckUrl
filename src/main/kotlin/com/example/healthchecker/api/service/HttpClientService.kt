@@ -8,11 +8,7 @@ import java.net.HttpURLConnection
 
 
 @Service
-class HttpClientService(
-    callTimeout: Long = 10000,
-    connectTimeout: Long = 5000,
-    readTimeout: Long = 5000
-) : HttpClient {
+class HttpClientService: HttpClient {
 
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(HttpClientService::class.java)
@@ -39,26 +35,32 @@ class HttpClientService(
                     connection.setRequestProperty("Accept", "*/*")
                     connection.setRequestProperty("Connection", "close")
                     connection.instanceFollowRedirects = true
-                    connection.connectTimeout = 5000
-                    connection.readTimeout = 5000
+                    connection.connectTimeout = 1000
+                    connection.readTimeout = 1000
                     connection.connect()
 
                     val responseCode = connection.responseCode
-                    if (responseCode == 403) {
-                        println("Acceso denegado: Código 403")
-                        return true
-                    } else if (responseCode == 404) {
-                        println("No encontrada: Código 404")
-                        return false
-                    }
-                    if (responseCode < 500) {
+                    if (responseCode < 400) {
                         val stream = connection.inputStream
                         stream.use { it.readBytes() }
                         return true
                     }
-                    println("User-Agent probado: $userAgent -> Código de respuesta: $responseCode")
+                    LOG.debug("User-Agent probado: $userAgent -> Código de respuesta: $responseCode")
                 } catch (e: Exception) {
                     println("Error con User-Agent: $userAgent -> ${e.message}")
+                    e.printStackTrace()
+
+                    // Verifica si la excepción es por un código HTTP específico
+                    val connection = (e as? java.io.IOException)?.cause as HttpURLConnection
+                    val responseCode = connection.responseCode
+
+                    if (responseCode == 403) {
+                        println("Acceso denegado (Catch): Código 403")
+                        return true
+                    } else if (responseCode == 404) {
+                        println("No encontrada (Catch): Código 404")
+                        return false
+                    }
                 }
             }
             return false
