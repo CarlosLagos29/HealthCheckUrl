@@ -39,8 +39,8 @@ class HttpClientService(
                     connection.setRequestProperty("Accept", "*/*")
                     connection.setRequestProperty("Connection", "close")
                     connection.instanceFollowRedirects = true
-                    connection.connectTimeout = 1000
-                    connection.readTimeout = 1000
+                    connection.connectTimeout = 5000
+                    connection.readTimeout = 5000
                     connection.connect()
 
                     val responseCode = connection.responseCode
@@ -56,11 +56,11 @@ class HttpClientService(
                         stream.use { it.readBytes() }
                         return true
                     }
+                    println("User-Agent probado: $userAgent -> Código de respuesta: $responseCode")
                 } catch (e: Exception) {
                     println("Error con User-Agent: $userAgent -> ${e.message}")
                 }
             }
             return false
     }
-
 }
