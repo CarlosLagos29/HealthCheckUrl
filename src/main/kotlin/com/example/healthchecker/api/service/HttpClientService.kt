@@ -44,23 +44,17 @@ class HttpClientService: HttpClient {
                         val stream = connection.inputStream
                         stream.use { it.readBytes() }
                         return true
-                    }
-                    LOG.debug("User-Agent probado: $userAgent -> Código de respuesta: $responseCode")
-                } catch (e: Exception) {
-                    println("Error con User-Agent: $userAgent -> ${e.message}")
-                    e.printStackTrace()
-
-                    // Verifica si la excepción es por un código HTTP específico
-                    val connection = (e as? java.io.IOException)?.cause as HttpURLConnection
-                    val responseCode = connection.responseCode
-
-                    if (responseCode == 403) {
-                        println("Acceso denegado (Catch): Código 403")
+                    } else if (responseCode == 403) {
+                        LOG.debug("Acceso denegado: Código 403")
                         return true
                     } else if (responseCode == 404) {
-                        println("No encontrada (Catch): Código 404")
+                        LOG.debug("No encontrada: Código 404")
                         return false
                     }
+
+                    LOG.debug("User-Agent probado: $userAgent -> Código de respuesta: $responseCode")
+                } catch (e: Exception) {
+                    LOG.debug("Error con User-Agent: $userAgent -> ${e.message}")
                 }
             }
             return false
