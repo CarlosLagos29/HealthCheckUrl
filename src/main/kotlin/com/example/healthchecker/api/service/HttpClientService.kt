@@ -21,10 +21,9 @@ class HttpClientService: HttpClient {
         if (urlParsed == null) return false
 
             val userAgents = listOf(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
                 "curl/8.5.0",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
             )
 
             for (userAgent in userAgents) {
@@ -35,8 +34,8 @@ class HttpClientService: HttpClient {
                     connection.setRequestProperty("Accept", "*/*")
                     connection.setRequestProperty("Connection", "close")
                     connection.instanceFollowRedirects = true
-                    connection.connectTimeout = 1000
-                    connection.readTimeout = 1000
+                    connection.connectTimeout = 2000
+                    connection.readTimeout = 2000
                     connection.connect()
 
                     val responseCode = connection.responseCode
@@ -44,8 +43,8 @@ class HttpClientService: HttpClient {
                         val stream = connection.inputStream
                         stream.use { it.readBytes() }
                         return true
-                    } else if (responseCode == 403) {
-                        LOG.debug("Acceso denegado: Código 403")
+                    } else if (responseCode in 401..403) {
+                        LOG.debug("Acceso denegado")
                         return true
                     } else if (responseCode == 404) {
                         LOG.debug("No encontrada: Código 404")
