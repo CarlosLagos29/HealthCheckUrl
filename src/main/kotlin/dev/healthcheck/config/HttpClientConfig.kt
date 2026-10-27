@@ -1,18 +1,17 @@
-package com.example.healthchecker.api.config
+package dev.healthcheck.config
 
 import okhttp3.OkHttpClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.concurrent.TimeUnit
 
 @Configuration
 class HttpClientConfig {
 
     @Bean
-    fun httpClient(): OkHttpClient {
+    fun httpClient(properties: HealthCheckProperties): OkHttpClient {
         return OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(properties.timeouts.connect)
+            .readTimeout(properties.timeouts.read)
             .followRedirects(true)
             .build()
     }

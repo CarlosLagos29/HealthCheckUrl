@@ -1,15 +1,14 @@
-package com.example.healthchecker.api.controller
+package dev.healthcheck.check
 
-import com.example.healthchecker.api.service.HttpClientService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api")
-class HttpClientController(private val httpClient: HttpClientService) {
+class UrlCheckController(private val urlChecker: UrlChecker) {
 
     @PostMapping("/health-check")
     fun checkUrl(@RequestParam url: String): Map<String, Any> {
-        val isAlive = httpClient.healthCheck(url)
+        val isAlive = urlChecker.healthCheck(url)
         return mapOf("url" to url, "isAlive" to isAlive)
     }
 }

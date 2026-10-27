@@ -1,0 +1,30 @@
+server:
+  port: 9090
+
+springdoc:
+  swagger-ui:
+    path: /docs
+    try-it-out-enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+healthcheck:
+  timeouts:
+    connect: 2s
+    read: 2s
+  max-redirects: 5
+  allowed-ports: [80, 443]
+  batch:
+    max-urls: 5
+    concurrency: 5
+    timeout: 15s
+  rate-limit:
+    per-ip:
+      capacity: 10
+      period: 1m
+    global:
+      capacity: 20
+      period: 10m
+    per-host:
+      capacity: 3
+      period: 10m
