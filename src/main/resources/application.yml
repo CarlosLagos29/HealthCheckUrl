@@ -8,8 +8,6 @@ springdoc:
     operations-sorter: alpha
     tags-sorter: alpha
 
-# Valores por defecto de HealthCheckProperties. Se pueden sobrescribir con variables
-# de entorno, p. ej. HEALTHCHECK_BATCH_MAXURLS=5
 healthcheck:
   timeouts:
     connect: 2s

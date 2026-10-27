@@ -1,4 +1,4 @@
-package com.carloslagos.healthcheck
+package dev.healthcheck
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan

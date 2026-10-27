@@ -1,13 +1,8 @@
-package com.carloslagos.healthcheck.config
+package dev.healthcheck.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Duration
 
-/**
- * Configuración del servicio, bajo el prefijo `healthcheck` en application.yml.
- * Cualquier valor se puede sobrescribir con variables de entorno,
- * p. ej. `HEALTHCHECK_BATCH_MAXURLS=5` o `HEALTHCHECK_RATELIMIT_GLOBAL_CAPACITY=20`.
- */
 @ConfigurationProperties("healthcheck")
 data class HealthCheckProperties(
     val timeouts: Timeouts = Timeouts(),
@@ -33,7 +28,6 @@ data class HealthCheckProperties(
         val perHost: Limit = Limit(3, Duration.ofMinutes(10)),
     )
 
-    /** Como máximo [capacity] requests cada [period]. */
     data class Limit(
         val capacity: Long,
         val period: Duration,

@@ -1,6 +1,5 @@
-package com.carloslagos.healthcheck.controller
+package dev.healthcheck.check
 
-import com.carloslagos.healthcheck.service.UrlChecker
 import org.springframework.web.bind.annotation.*
 
 @RestController

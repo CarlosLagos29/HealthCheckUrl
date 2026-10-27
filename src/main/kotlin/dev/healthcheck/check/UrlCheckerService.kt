@@ -1,4 +1,4 @@
-package com.carloslagos.healthcheck.service
+package dev.healthcheck.check
 
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -13,7 +13,6 @@ class UrlCheckerService(private val httpClient: OkHttpClient) : UrlChecker {
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(UrlCheckerService::class.java)
 
-        // Se reemplaza por un User-Agent fijo y honesto en la Etapa 4
         private val USER_AGENTS = listOf(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
             "curl/8.5.0",
@@ -34,7 +33,6 @@ class UrlCheckerService(private val httpClient: OkHttpClient) : UrlChecker {
                 .build()
 
             try {
-                // Cerrar la respuesta sin leer el body: con el código de estado alcanza
                 val responseCode = httpClient.newCall(request).execute().use { it.code }
 
                 if (responseCode < 400) {

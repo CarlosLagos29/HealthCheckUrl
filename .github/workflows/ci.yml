@@ -5,7 +5,6 @@ on:
   pull_request:
     branches: [master]
 
-# Si se pushea de nuevo a la misma rama, cancela la ejecución anterior
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -27,11 +26,9 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # Caché de Gradle (dependencias y wrapper)
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build and test
         run: ./gradlew check --no-daemon
 
-      # TODO Etapa 9: agregar `docker build .` cuando exista el Dockerfile
