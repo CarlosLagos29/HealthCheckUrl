@@ -1,5 +1,6 @@
 package dev.healthcheck.security
 
+import dev.healthcheck.common.enums.FailureReason
 import okhttp3.Dns
 import java.net.InetAddress
 
@@ -13,7 +14,7 @@ class SafeDns(
 
         if (addresses.any { validator.isBlocked(it) }) {
             throw BlockedAddressException(
-                BlockReason.PRIVATE_ADDRESS,
+                FailureReason.PRIVATE_ADDRESS,
                 "Host $hostname resolves to a blocked address",
             )
         }

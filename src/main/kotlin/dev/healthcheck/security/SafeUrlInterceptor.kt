@@ -1,5 +1,6 @@
 package dev.healthcheck.security
 
+import dev.healthcheck.common.enums.FailureReason
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -19,13 +20,13 @@ class SafeUrlInterceptor(
 
     private fun checkPort(url: HttpUrl) {
         if (url.port !in allowedPorts) {
-            throw BlockedAddressException(BlockReason.PORT_NOT_ALLOWED, "Port ${url.port} is not allowed")
+            throw BlockedAddressException(FailureReason.PORT_NOT_ALLOWED, "Port ${url.port} is not allowed")
         }
     }
 
     private fun checkLiteralAddress(url: HttpUrl) {
         if (isIpLiteral(url.host) && InetAddress.getAllByName(url.host).any { validator.isBlocked(it) }) {
-            throw BlockedAddressException(BlockReason.PRIVATE_ADDRESS, "Host ${url.host} is a blocked address")
+            throw BlockedAddressException(FailureReason.PRIVATE_ADDRESS, "Host ${url.host} is a blocked address")
         }
     }
 
