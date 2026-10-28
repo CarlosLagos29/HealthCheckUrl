@@ -10,8 +10,11 @@ data class HealthCheckResponse(
     @Schema(description = "Normalized URL that was checked", example = "https://example.com/")
     val url: String,
 
-    @Schema(description = "URL reached after following redirects", example = "https://example.com/")
-    val finalUrl: String?,
+    @Schema(
+        description = "Last URL reached: the same as url without redirects, or the hop where the check failed",
+        example = "https://example.com/",
+    )
+    val finalUrl: String,
 
     @Schema(description = "Result of the check", example = "UP")
     val status: HealthStatus,
@@ -26,7 +29,7 @@ data class HealthCheckResponse(
     @Schema(description = "Number of redirects followed", example = "0")
     val redirects: Int,
 
-    @Schema(description = "Why the URL is DOWN or BLOCKED. Omitted when UP")
+    @Schema(description = "Why the URL is DOWN, BLOCKED or REJECTED. Omitted when UP")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val reason: FailureReason?,
 

@@ -21,13 +21,13 @@ class SafeUrlInterceptor(
 
     private fun checkPort(url: HttpUrl) {
         if (url.port !in allowedPorts) {
-            throw BlockedAddressException(FailureReason.PORT_NOT_ALLOWED, "Port ${url.port} is not allowed")
+            throw RejectedAddressException(FailureReason.PORT_NOT_ALLOWED, "Port ${url.port} is not allowed, rejected by the API")
         }
     }
 
     private fun checkLiteralAddress(url: HttpUrl) {
         if (isIpLiteral(url.host) && InetAddress.getAllByName(url.host).any { validator.isBlocked(it) }) {
-            throw BlockedAddressException(FailureReason.PRIVATE_ADDRESS, "Host ${url.host} is a blocked address")
+            throw RejectedAddressException(FailureReason.PRIVATE_ADDRESS, "Host ${url.host} is a private address, rejected by the API")
         }
     }
 }

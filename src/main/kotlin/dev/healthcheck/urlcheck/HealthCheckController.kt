@@ -21,8 +21,9 @@ class HealthCheckController(private val healthChecker: HealthChecker) {
     @PostMapping
     @Operation(
         summary = "Check a single URL",
-        description = "Sends a request to the URL and reports whether it is UP, DOWN or BLOCKED. " +
-            "Without a scheme, https:// is assumed. Private addresses and ports other than 80/443 are blocked.",
+        description = "Sends a request to the URL and reports whether it is UP, DOWN, BLOCKED (the site answered " +
+            "401/403, so its health is unknown) or REJECTED (the API refused to check it). Without a scheme, https:// " +
+            "is assumed. Private addresses and ports other than 80/443 are rejected.",
     )
     @ApiResponse(
         responseCode = "200",
@@ -35,6 +36,7 @@ class HealthCheckController(private val healthChecker: HealthChecker) {
                     ExampleObject(name = "UP", value = UP_EXAMPLE),
                     ExampleObject(name = "DOWN", value = DOWN_EXAMPLE),
                     ExampleObject(name = "BLOCKED", value = BLOCKED_EXAMPLE),
+                    ExampleObject(name = "REJECTED", value = REJECTED_EXAMPLE),
                 ],
             ),
         ],
@@ -58,6 +60,11 @@ private const val DOWN_EXAMPLE = """
 """
 
 private const val BLOCKED_EXAMPLE = """
-{"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "BLOCKED",
+{"url": "https://example.com/admin", "finalUrl": "https://example.com/admin", "status": "BLOCKED", "httpStatus": 403,
+ "latencyMs": 120, "redirects": 0, "reason": "ACCESS_DENIED", "checkedAt": "2026-10-28T10:00:00Z"}
+"""
+
+private const val REJECTED_EXAMPLE = """
+{"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "REJECTED",
  "latencyMs": 1, "redirects": 0, "reason": "PRIVATE_ADDRESS", "checkedAt": "2026-10-28T10:00:00Z"}
 """

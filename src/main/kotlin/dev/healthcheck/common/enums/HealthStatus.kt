@@ -4,4 +4,5 @@ enum class HealthStatus {
     UP,
     DOWN,
     BLOCKED,
+    REJECTED,
 }

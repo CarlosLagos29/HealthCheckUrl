@@ -30,7 +30,7 @@ class SafeDnsTest {
     @Test
     fun `rejects host resolving to a private address`() {
         assertThatThrownBy { resolvingTo("10.0.0.1").lookup("example.com") }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
@@ -38,7 +38,7 @@ class SafeDnsTest {
     @Test
     fun `rejects host when any resolved address is blocked`() {
         assertThatThrownBy { resolvingTo("8.8.8.8", "127.0.0.1").lookup("example.com") }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
@@ -46,7 +46,7 @@ class SafeDnsTest {
     @Test
     fun `rejects localhost with the real system resolver`() {
         assertThatThrownBy { SafeDns(IpAddressValidator()).lookup("localhost") }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
