@@ -1,6 +1,7 @@
 package dev.healthcheck.security
 
 import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.isIpLiteral
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -29,7 +30,4 @@ class SafeUrlInterceptor(
             throw BlockedAddressException(FailureReason.PRIVATE_ADDRESS, "Host ${url.host} is a blocked address")
         }
     }
-
-    private fun isIpLiteral(host: String): Boolean =
-        ':' in host || host.all { it.isDigit() || it == '.' }
 }

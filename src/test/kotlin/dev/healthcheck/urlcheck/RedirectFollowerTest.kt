@@ -1,4 +1,4 @@
-package dev.healthcheck.check
+package dev.healthcheck.urlcheck
 
 import dev.healthcheck.common.enums.FailureReason
 import dev.healthcheck.security.BlockedAddressException
