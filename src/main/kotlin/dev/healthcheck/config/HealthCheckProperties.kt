@@ -5,27 +5,27 @@ import java.time.Duration
 
 @ConfigurationProperties("healthcheck")
 data class HealthCheckProperties(
-    val timeouts: Timeouts = Timeouts(),
-    val maxRedirects: Int = 5,
-    val allowedPorts: Set<Int> = setOf(80, 443),
-    val batch: Batch = Batch(),
-    val rateLimit: RateLimit = RateLimit(),
+    val timeouts: Timeouts,
+    val maxRedirects: Int,
+    val allowedPorts: Set<Int>,
+    val batch: Batch,
+    val rateLimit: RateLimit,
 ) {
     data class Timeouts(
-        val connect: Duration = Duration.ofSeconds(2),
-        val read: Duration = Duration.ofSeconds(2),
+        val connect: Duration,
+        val read: Duration,
     )
 
     data class Batch(
-        val maxUrls: Int = 5,
-        val concurrency: Int = 5,
-        val timeout: Duration = Duration.ofSeconds(15),
+        val maxUrls: Int,
+        val concurrency: Int,
+        val timeout: Duration,
     )
 
     data class RateLimit(
-        val perIp: Limit = Limit(10, Duration.ofMinutes(1)),
-        val global: Limit = Limit(20, Duration.ofMinutes(10)),
-        val perHost: Limit = Limit(3, Duration.ofMinutes(10)),
+        val perIp: Limit,
+        val global: Limit,
+        val perHost: Limit,
     )
 
     data class Limit(

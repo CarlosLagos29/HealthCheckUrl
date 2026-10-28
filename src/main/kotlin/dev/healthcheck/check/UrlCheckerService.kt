@@ -1,14 +1,13 @@
 package dev.healthcheck.check
 
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class UrlCheckerService(private val httpClient: OkHttpClient) : UrlChecker {
+class UrlCheckerService(private val redirectFollower: RedirectFollower) : UrlChecker {
 
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(UrlCheckerService::class.java)
@@ -33,7 +32,7 @@ class UrlCheckerService(private val httpClient: OkHttpClient) : UrlChecker {
                 .build()
 
             try {
-                val responseCode = httpClient.newCall(request).execute().use { it.code }
+                val responseCode = redirectFollower.execute(request).code
 
                 if (responseCode < 400) {
                     return true
