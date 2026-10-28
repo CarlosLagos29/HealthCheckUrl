@@ -1,5 +1,6 @@
 package dev.healthcheck.security
 
+import dev.healthcheck.common.enums.FailureReason
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
@@ -30,7 +31,7 @@ class SafeUrlInterceptorTest {
     fun `blocks literal private addresses`(url: String) {
         assertThatThrownBy { call(url) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -39,7 +40,7 @@ class SafeUrlInterceptorTest {
     fun `blocks alternative notations of private addresses`(url: String) {
         assertThatThrownBy { call(url) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -48,7 +49,7 @@ class SafeUrlInterceptorTest {
     fun `blocks ports that are not allowed`(url: String) {
         assertThatThrownBy { call(url) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PORT_NOT_ALLOWED)
+                assertThat(it.reason).isEqualTo(FailureReason.PORT_NOT_ALLOWED)
             }
     }
 

@@ -1,13 +1,9 @@
 package dev.healthcheck.security
 
+import dev.healthcheck.common.enums.FailureReason
 import java.io.IOException
 
-enum class BlockReason {
-    PRIVATE_ADDRESS,
-    PORT_NOT_ALLOWED,
-}
-
 class BlockedAddressException(
-    val reason: BlockReason,
+    val reason: FailureReason,
     message: String,
 ) : IOException(message)

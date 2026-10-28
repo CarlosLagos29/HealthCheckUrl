@@ -1,6 +1,6 @@
-package dev.healthcheck.check
+package dev.healthcheck.urlcheck
 
-import dev.healthcheck.security.BlockReason
+import dev.healthcheck.common.enums.FailureReason
 import dev.healthcheck.security.BlockedAddressException
 import dev.healthcheck.security.LoopbackAllowingValidator
 import dev.healthcheck.security.SafeDns
@@ -43,14 +43,14 @@ class RedirectFollowerTest {
 
     private fun ok() = MockResponse.Builder().code(200).build()
 
-    private fun get(path: String) = Request.Builder().url(server.url(path)).build()
+    private fun startRequest() = Request.Builder().url(server.url("/start")).build()
 
     @Test
     fun `follows a redirect and reports the final url`() {
         server.enqueue(redirectTo("/final"))
         server.enqueue(ok())
 
-        val result = follower().execute(get("/start"))
+        val result = follower().execute(startRequest())
 
         assertThat(result.code).isEqualTo(200)
         assertThat(result.finalUrl).isEqualTo(server.url("/final"))
@@ -61,7 +61,7 @@ class RedirectFollowerTest {
     fun `returns the redirect response when there is no Location header`() {
         server.enqueue(MockResponse.Builder().code(302).build())
 
-        val result = follower().execute(get("/start"))
+        val result = follower().execute(startRequest())
 
         assertThat(result.code).isEqualTo(302)
         assertThat(result.redirects).isEqualTo(0)
@@ -71,9 +71,9 @@ class RedirectFollowerTest {
     fun `blocks a redirect to a private IP`() {
         server.enqueue(redirectTo("http://169.254.169.254/latest/meta-data/"))
 
-        assertThatThrownBy { follower().execute(get("/start")) }
+        assertThatThrownBy { follower().execute(startRequest()) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -81,9 +81,9 @@ class RedirectFollowerTest {
     fun `blocks a redirect to a host that resolves to a private IP`() {
         server.enqueue(redirectTo("http://internal.test/"))
 
-        assertThatThrownBy { follower().execute(get("/start")) }
+        assertThatThrownBy { follower().execute(startRequest()) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -91,9 +91,9 @@ class RedirectFollowerTest {
     fun `blocks a redirect to a port that is not allowed`() {
         server.enqueue(redirectTo("http://localhost:22/"))
 
-        assertThatThrownBy { follower().execute(get("/start")) }
+        assertThatThrownBy { follower().execute(startRequest()) }
             .isInstanceOfSatisfying(BlockedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(BlockReason.PORT_NOT_ALLOWED)
+                assertThat(it.reason).isEqualTo(FailureReason.PORT_NOT_ALLOWED)
             }
     }
 
@@ -103,7 +103,7 @@ class RedirectFollowerTest {
         server.enqueue(redirectTo("/2"))
         server.enqueue(ok())
 
-        val result = follower(maxRedirects = 2).execute(get("/start"))
+        val result = follower(maxRedirects = 2).execute(startRequest())
 
         assertThat(result.code).isEqualTo(200)
         assertThat(result.redirects).isEqualTo(2)
@@ -113,7 +113,7 @@ class RedirectFollowerTest {
     fun `fails when the maximum number of redirects is exceeded`() {
         repeat(3) { server.enqueue(redirectTo("/loop")) }
 
-        assertThatThrownBy { follower(maxRedirects = 2).execute(get("/start")) }
+        assertThatThrownBy { follower(maxRedirects = 2).execute(startRequest()) }
             .isInstanceOf(TooManyRedirectsException::class.java)
         assertThat(server.requestCount).isEqualTo(3)
     }
