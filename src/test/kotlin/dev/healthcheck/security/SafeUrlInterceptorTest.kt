@@ -30,7 +30,7 @@ class SafeUrlInterceptorTest {
     @ValueSource(strings = ["http://127.0.0.1/", "http://[::1]/", "http://169.254.169.254/", "http://[::ffff:127.0.0.1]/"])
     fun `blocks literal private addresses`(url: String) {
         assertThatThrownBy { call(url) }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
@@ -39,7 +39,7 @@ class SafeUrlInterceptorTest {
     @ValueSource(strings = ["http://2130706433/", "http://127.1/", "http://127.000.000.001/"])
     fun `blocks alternative notations of private addresses`(url: String) {
         assertThatThrownBy { call(url) }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
             }
     }
@@ -48,7 +48,7 @@ class SafeUrlInterceptorTest {
     @ValueSource(strings = ["http://example.com:8080/", "https://example.com:22/", "http://8.8.8.8:6379/"])
     fun `blocks ports that are not allowed`(url: String) {
         assertThatThrownBy { call(url) }
-            .isInstanceOfSatisfying(BlockedAddressException::class.java) {
+            .isInstanceOfSatisfying(RejectedAddressException::class.java) {
                 assertThat(it.reason).isEqualTo(FailureReason.PORT_NOT_ALLOWED)
             }
     }

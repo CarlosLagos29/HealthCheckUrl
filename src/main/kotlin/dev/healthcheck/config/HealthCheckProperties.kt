@@ -14,6 +14,7 @@ data class HealthCheckProperties(
     data class Timeouts(
         val connect: Duration,
         val read: Duration,
+        val total: Duration,
     )
 
     data class Batch(

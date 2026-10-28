@@ -13,9 +13,9 @@ class SafeDns(
         val addresses = delegate.lookup(hostname)
 
         if (addresses.any { validator.isBlocked(it) }) {
-            throw BlockedAddressException(
+            throw RejectedAddressException(
                 FailureReason.PRIVATE_ADDRESS,
-                "Host $hostname resolves to a blocked address",
+                "Host $hostname resolves to a private address, rejected by the API",
             )
         }
 

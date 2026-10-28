@@ -12,6 +12,7 @@ healthcheck:
   timeouts:
     connect: 2s
     read: 2s
+    total: 10s
   max-redirects: 5
   allowed-ports: [80, 443]
   batch:

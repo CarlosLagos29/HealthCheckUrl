@@ -27,5 +27,5 @@ class HttpClientConfig {
 
     @Bean
     fun redirectFollower(httpClient: OkHttpClient, properties: HealthCheckProperties): RedirectFollower =
-        RedirectFollower(httpClient, properties.maxRedirects)
+        RedirectFollower(httpClient, properties.maxRedirects, properties.timeouts.total)
 }

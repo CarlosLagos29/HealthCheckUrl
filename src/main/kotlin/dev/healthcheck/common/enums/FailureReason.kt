@@ -5,6 +5,8 @@ enum class FailureReason {
     DNS_ERROR,
     CONNECTION_ERROR,
     TLS_ERROR,
+    AUTH_REQUIRED,
+    ACCESS_DENIED,
     HTTP_4XX,
     HTTP_5XX,
     TOO_MANY_REDIRECTS,
