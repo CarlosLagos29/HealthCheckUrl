@@ -40,6 +40,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+springBoot {
+    buildInfo()
+}
+
 kotlin {
     jvmToolchain(21)
     compilerOptions {
