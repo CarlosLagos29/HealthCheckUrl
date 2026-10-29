@@ -1,8 +1,15 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.single
 
+import dev.healthcheck.cache.UrlCache
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
+import dev.healthcheck.config.HealthCheckProperties
+import dev.healthcheck.ratelimit.ClientRateLimiter
+import dev.healthcheck.ratelimit.HostRateLimiter
 import dev.healthcheck.security.loopbackAllowingClient
+import dev.healthcheck.urlcheck.core.InvalidUrlException
+import dev.healthcheck.urlcheck.core.NO_HTTP_STATUS
+import dev.healthcheck.urlcheck.core.RedirectFollower
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -26,8 +33,16 @@ class HealthCheckServiceTest {
         extraPorts: Set<Int> = emptySet(),
     ): HealthCheckService {
         val client = loopbackAllowingClient(setOf(80, 443, server.port) + extraPorts, readTimeout = readTimeout)
-        return HealthCheckService(RedirectFollower(client, maxRedirects, Duration.ofSeconds(10)))
+        val generous = HealthCheckProperties.Limit(1_000, Duration.ofMinutes(1))
+        return HealthCheckService(
+            RedirectFollower(client, maxRedirects, Duration.ofSeconds(10)),
+            UrlCache(Duration.ofMinutes(1)),
+            ClientRateLimiter(generous, generous, generous),
+            HostRateLimiter(generous),
+        )
     }
+
+    private fun HealthCheckService.healthCheck(url: String) = healthCheck(url, "203.0.113.1")
 
     private fun url(path: String = "/") = "http://127.0.0.1:${server.port}$path"
 

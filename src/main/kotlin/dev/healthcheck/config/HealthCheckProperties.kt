@@ -10,6 +10,7 @@ data class HealthCheckProperties(
     val allowedPorts: Set<Int>,
     val batch: Batch,
     val rateLimit: RateLimit,
+    val cache: Cache,
 ) {
     data class Timeouts(
         val connect: Duration,
@@ -25,12 +26,17 @@ data class HealthCheckProperties(
 
     data class RateLimit(
         val perIp: Limit,
-        val global: Limit,
+        val globalSingle: Limit,
+        val globalBatch: Limit,
         val perHost: Limit,
     )
 
     data class Limit(
         val capacity: Long,
         val period: Duration,
+    )
+
+    data class Cache(
+        val ttl: Duration,
     )
 }

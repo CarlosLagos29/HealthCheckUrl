@@ -2,12 +2,17 @@ package dev.healthcheck.urlcheck
 
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
+import dev.healthcheck.config.HealthCheckProperties
+import dev.healthcheck.urlcheck.batch.BatchHealthChecker
+import dev.healthcheck.urlcheck.core.HealthCheckResult
+import dev.healthcheck.urlcheck.core.InvalidUrlException
+import dev.healthcheck.urlcheck.single.HealthChecker
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -17,6 +22,7 @@ import org.springframework.test.web.servlet.post
 import java.time.Instant
 
 @WebMvcTest(HealthCheckController::class)
+@EnableConfigurationProperties(HealthCheckProperties::class)
 class HealthCheckControllerTest {
 
     @Autowired
@@ -63,7 +69,7 @@ class HealthCheckControllerTest {
 
     @Test
     fun `returns the check result`() {
-        given(healthChecker.healthCheck("example.com")).willReturn(upResult())
+        given(healthChecker.healthCheck("example.com", "127.0.0.1")).willReturn(upResult())
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isOk() }
@@ -110,7 +116,7 @@ class HealthCheckControllerTest {
 
     @Test
     fun `maps an invalid url to a 400 with reason INVALID_URL`() {
-        given(healthChecker.healthCheck(anyString())).willThrow(InvalidUrlException("Malformed URL"))
+        given(healthChecker.healthCheck(anyString(), anyString())).willThrow(InvalidUrlException("Malformed URL"))
 
         postCheck("""{"url": "https://exa mple.com"}""").andExpect {
             status { isBadRequest() }
@@ -124,7 +130,7 @@ class HealthCheckControllerTest {
 
     @Test
     fun `hides internal details on unexpected errors`() {
-        given(healthChecker.healthCheck(anyString())).willThrow(IllegalStateException("secret internal detail"))
+        given(healthChecker.healthCheck(anyString(), anyString())).willThrow(IllegalStateException("secret internal detail"))
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isInternalServerError() }
@@ -135,7 +141,7 @@ class HealthCheckControllerTest {
 
     @Test
     fun `returns the batch results in order inside results`() {
-        given(batchHealthChecker.healthCheckBatch(listOf("example.com", "ftp://example.com")))
+        given(batchHealthChecker.healthCheckBatch(listOf("example.com", "ftp://example.com"), "127.0.0.1"))
             .willReturn(listOf(upResult(), invalidResult()))
 
         postBatch("""{"urls": ["example.com", "ftp://example.com"]}""").andExpect {
@@ -173,14 +179,13 @@ class HealthCheckControllerTest {
     }
 
     @Test
-    fun `maps a batch that is too large to a 400`() {
-        given(batchHealthChecker.healthCheckBatch(anyList())).willThrow(BatchTooLargeException(5))
-
+    fun `rejects a batch with more urls than the limit before checking any`() {
         postBatch("""{"urls": ["a.com", "b.com", "c.com", "d.com", "e.com", "f.com"]}""").andExpect {
             status { isBadRequest() }
             content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
-            jsonPath("$.title") { value("Batch too large") }
-            jsonPath("$.detail") { value("A batch accepts at most 5 URLs") }
+            jsonPath("$.errors.urls") { value("must contain at most 5 URLs") }
         }
+
+        verifyNoInteractions(batchHealthChecker)
     }
 }

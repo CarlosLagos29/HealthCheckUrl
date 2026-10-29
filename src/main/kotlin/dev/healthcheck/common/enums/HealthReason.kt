@@ -13,5 +13,6 @@ enum class HealthReason {
     TOO_MANY_REDIRECTS,
     PRIVATE_ADDRESS,
     PORT_NOT_ALLOWED,
+    HOST_RATE_LIMITED,
     INVALID_URL,
 }

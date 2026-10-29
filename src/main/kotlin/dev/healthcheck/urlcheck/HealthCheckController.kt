@@ -1,7 +1,14 @@
 package dev.healthcheck.urlcheck
 
 import dev.healthcheck.common.toLogSafe
+import dev.healthcheck.urlcheck.batch.BatchHealthChecker
+import dev.healthcheck.urlcheck.batch.HealthCheckBatchRequest
+import dev.healthcheck.urlcheck.batch.HealthCheckBatchResponse
+import dev.healthcheck.urlcheck.core.HealthCheckResponse
+import dev.healthcheck.urlcheck.single.HealthCheckRequest
+import dev.healthcheck.urlcheck.single.HealthChecker
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,9 +31,9 @@ class HealthCheckController(
 
     @PostMapping
     @HealthCheckDocs
-    fun healthCheck(@Valid @RequestBody request: HealthCheckRequest): HealthCheckResponse {
+    fun healthCheck(@Valid @RequestBody request: HealthCheckRequest, httpRequest: HttpServletRequest): HealthCheckResponse {
         LOG.info("Health check requested: url={}", request.url.toLogSafe())
-        val result = healthChecker.healthCheck(request.url)
+        val result = healthChecker.healthCheck(request.url, httpRequest.remoteAddr)
         LOG.info(
             "Health check done: url={} status={} reason={} httpStatus={} latencyMs={}",
             result.url, result.status, result.reason, result.httpStatus, result.latencyMs,
@@ -36,9 +43,12 @@ class HealthCheckController(
 
     @PostMapping("/batch")
     @BatchHealthCheckDocs
-    fun healthCheckBatch(@Valid @RequestBody request: HealthCheckBatchRequest): HealthCheckBatchResponse {
+    fun healthCheckBatch(
+        @Valid @RequestBody request: HealthCheckBatchRequest,
+        httpRequest: HttpServletRequest,
+    ): HealthCheckBatchResponse {
         LOG.info("Batch health check requested: {} urls", request.urls.size)
-        val results = batchHealthChecker.healthCheckBatch(request.urls)
+        val results = batchHealthChecker.healthCheckBatch(request.urls, httpRequest.remoteAddr)
         LOG.info("Batch health check done: {}", results.groupingBy { it.status }.eachCount())
         return HealthCheckBatchResponse(results.map(HealthCheckResponse::from))
     }

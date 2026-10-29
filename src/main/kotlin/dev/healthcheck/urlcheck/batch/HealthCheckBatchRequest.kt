@@ -1,4 +1,4 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.batch
 
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -12,5 +12,6 @@ data class HealthCheckBatchRequest(
         ),
     )
     @NotEmpty(message = "must not be empty")
+    @MaxBatchSize
     val urls: List<String>,
 )
