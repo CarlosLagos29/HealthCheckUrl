@@ -1,6 +1,7 @@
 package dev.healthcheck.urlcheck
 
 import dev.healthcheck.common.enums.HealthStatus
+import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.given
@@ -23,13 +24,16 @@ class HealthCheckControllerTest {
     @MockitoBean
     private lateinit var healthChecker: HealthChecker
 
+    @MockitoBean
+    private lateinit var batchHealthChecker: BatchHealthChecker
+
     private fun postCheck(body: String): ResultActionsDsl =
         mockMvc.post("/api/v1/health-checks") {
             contentType = MediaType.APPLICATION_JSON
             content = body
         }
 
-    private fun upResponse() = HealthCheckResponse(
+    private fun upResponse() = HealthCheckResult(
         url = "https://example.com/",
         finalUrl = "https://example.com/",
         status = HealthStatus.UP,
@@ -54,13 +58,13 @@ class HealthCheckControllerTest {
     }
 
     @Test
-    fun `omits httpStatus and reason when they are null`() {
+    fun `always includes nullable fields, as null`() {
         given(healthChecker.healthCheck(anyString())).willReturn(upResponse())
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isOk() }
-            jsonPath("$.httpStatus") { doesNotExist() }
-            jsonPath("$.reason") { doesNotExist() }
+            jsonPath("$.httpStatus") { value(nullValue()) }
+            jsonPath("$.reason") { value(nullValue()) }
         }
     }
 

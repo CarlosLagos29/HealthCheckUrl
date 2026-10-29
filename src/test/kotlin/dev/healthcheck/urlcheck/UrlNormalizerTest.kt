@@ -74,4 +74,15 @@ class UrlNormalizerTest {
     fun `accepts internationalized domains`(raw: String, expected: String) {
         assertThat(normalize(raw)).isEqualTo(expected)
     }
+
+    @Test
+    fun `normalizeOrNull returns the url when it is valid`() {
+        assertThat(UrlNormalizer.normalizeOrNull("example.com").toString()).isEqualTo("https://example.com/")
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["ftp://example.com", "https://wwwgooglecom", "https://exa mple.com"])
+    fun `normalizeOrNull returns null instead of throwing for invalid urls`(raw: String) {
+        assertThat(UrlNormalizer.normalizeOrNull(raw)).isNull()
+    }
 }

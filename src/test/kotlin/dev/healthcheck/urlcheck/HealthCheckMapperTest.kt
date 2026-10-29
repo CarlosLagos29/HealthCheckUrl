@@ -20,7 +20,7 @@ class HealthCheckMapperTest {
         val response = HealthCheckMapper.fromResponse(url, followed, 120, checkedAt)
 
         assertThat(response).isEqualTo(
-            HealthCheckResponse(
+            HealthCheckResult(
                 url = "https://example.com/",
                 finalUrl = "https://example.com/missing",
                 status = HealthStatus.DOWN,
@@ -44,7 +44,7 @@ class HealthCheckMapperTest {
         val response = HealthCheckMapper.fromFailure(url, failure, 5, checkedAt)
 
         assertThat(response).isEqualTo(
-            HealthCheckResponse(
+            HealthCheckResult(
                 url = "https://example.com/",
                 finalUrl = "http://169.254.169.254/",
                 status = HealthStatus.REJECTED,

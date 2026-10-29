@@ -29,4 +29,11 @@ object UrlNormalizer {
 
         return url
     }
+
+    fun normalizeOrNull(raw: String): HttpUrl? =
+        try {
+            normalize(raw)
+        } catch (e: InvalidUrlException) {
+            null
+        }
 }
