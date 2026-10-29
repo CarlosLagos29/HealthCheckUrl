@@ -1,5 +1,6 @@
 server:
   port: 9090
+  forward-headers-strategy: native
 
 logging:
   pattern:
@@ -33,10 +34,15 @@ healthcheck:
   rate-limit:
     per-ip:
       capacity: 10
-      period: 1m
-    global:
-      capacity: 20
+      period: 10m
+    global-single:
+      capacity: 25
+      period: 10m
+    global-batch:
+      capacity: 50
       period: 10m
     per-host:
       capacity: 3
       period: 10m
+  cache:
+    ttl: 5m

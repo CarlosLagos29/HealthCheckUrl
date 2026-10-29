@@ -1,4 +1,4 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.core
 
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus

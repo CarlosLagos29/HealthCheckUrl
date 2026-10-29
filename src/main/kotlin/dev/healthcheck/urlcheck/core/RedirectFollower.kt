@@ -1,4 +1,4 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.core
 
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient

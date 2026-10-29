@@ -3,7 +3,7 @@ package dev.healthcheck.config
 import dev.healthcheck.security.IpAddressValidator
 import dev.healthcheck.security.SafeDns
 import dev.healthcheck.security.SafeUrlInterceptor
-import dev.healthcheck.urlcheck.RedirectFollower
+import dev.healthcheck.urlcheck.core.RedirectFollower
 import okhttp3.OkHttpClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

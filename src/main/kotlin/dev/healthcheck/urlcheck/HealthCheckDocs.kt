@@ -1,5 +1,7 @@
 package dev.healthcheck.urlcheck
 
+import dev.healthcheck.urlcheck.batch.HealthCheckBatchResponse
+import dev.healthcheck.urlcheck.core.HealthCheckResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -13,7 +15,8 @@ import org.springframework.http.ProblemDetail
     summary = "Check a single URL",
     description = "Sends a request to the URL and reports whether it is UP, DOWN, BLOCKED (the site answered " +
         "401/403, so its health is unknown) or REJECTED (the API refused to check it). Without a scheme, https:// " +
-        "is assumed. Private addresses and ports other than 80/443 are rejected.",
+        "is assumed. Private addresses and ports other than 80/443 are rejected. A URL checked in the last 5 minutes is served " +
+        "from cache; a site checked too often recently is REJECTED with reason HOST_RATE_LIMITED.",
 )
 @ApiResponse(
     responseCode = "200",
@@ -36,6 +39,11 @@ import org.springframework.http.ProblemDetail
     description = "Invalid request: blank or malformed URL, scheme other than http/https, or unreadable JSON.",
     content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
 )
+@ApiResponse(
+    responseCode = "429",
+    description = "Rate limit exceeded (per client IP or global). The Retry-After header says how many seconds to wait.",
+    content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
+)
 annotation class HealthCheckDocs
 
 @Target(AnnotationTarget.FUNCTION)
@@ -45,7 +53,7 @@ annotation class HealthCheckDocs
     description = "Checks up to the batch limit (5 by default) in parallel and returns one result per URL, in the " +
         "same order. Each URL follows the same rules as a single check. Repeated URLs are checked once. An invalid " +
         "URL does not fail the batch: its result is INVALID with reason INVALID_URL. URLs still running when the " +
-        "batch timeout ends are DOWN with reason TIMEOUT.",
+        "batch timeout ends are DOWN with reason TIMEOUT. Only valid, unique URLs count towards the rate limit.",
 )
 @ApiResponse(
     responseCode = "200",
@@ -61,6 +69,11 @@ annotation class HealthCheckDocs
 @ApiResponse(
     responseCode = "400",
     description = "Invalid request: empty list, more URLs than the batch limit, or unreadable JSON.",
+    content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
+)
+@ApiResponse(
+    responseCode = "429",
+    description = "Rate limit exceeded (per client IP or global). The Retry-After header says how many seconds to wait.",
     content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class BatchHealthCheckDocs

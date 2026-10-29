@@ -1,5 +1,6 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.batch
 
+import dev.healthcheck.urlcheck.core.HealthCheckResponse
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class HealthCheckBatchResponse(

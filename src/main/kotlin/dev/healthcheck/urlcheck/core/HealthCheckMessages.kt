@@ -1,4 +1,4 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.core
 
 import dev.healthcheck.common.enums.HealthReason
 
@@ -15,5 +15,6 @@ fun HealthReason.toMessage(): String = when (this) {
     HealthReason.TOO_MANY_REDIRECTS -> "The site redirected too many times"
     HealthReason.PRIVATE_ADDRESS -> "Private or internal addresses are not allowed"
     HealthReason.PORT_NOT_ALLOWED -> "Only ports 80 and 443 are allowed"
+    HealthReason.HOST_RATE_LIMITED -> "This site was checked too many times recently, try again later"
     HealthReason.INVALID_URL -> "The URL is not valid"
 }

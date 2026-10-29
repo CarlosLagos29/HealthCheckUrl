@@ -1,4 +1,4 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.core
 
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
@@ -33,6 +33,17 @@ object HealthCheckMapper {
             checkedAt = checkedAt,
         )
     }
+
+    fun fromHostRateLimited(url: HttpUrl, checkedAt: Instant): HealthCheckResult =
+        HealthCheckResult(
+            url = url.toString(),
+            finalUrl = url.toString(),
+            status = HealthStatus.REJECTED,
+            latencyMs = 0,
+            redirects = 0,
+            reason = HealthReason.HOST_RATE_LIMITED,
+            checkedAt = checkedAt,
+        )
 
     fun fromInvalidUrl(rawUrl: String, checkedAt: Instant): HealthCheckResult =
         HealthCheckResult(

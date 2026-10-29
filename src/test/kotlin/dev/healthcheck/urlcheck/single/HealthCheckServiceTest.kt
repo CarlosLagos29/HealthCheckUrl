@@ -1,8 +1,16 @@
-package dev.healthcheck.urlcheck
+package dev.healthcheck.urlcheck.single
 
+import dev.healthcheck.cache.UrlCache
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
+import dev.healthcheck.config.HealthCheckProperties
+import dev.healthcheck.ratelimit.ClientRateLimiter
+import dev.healthcheck.ratelimit.HostRateLimiter
+import dev.healthcheck.ratelimit.RateLimitExceededException
 import dev.healthcheck.security.loopbackAllowingClient
+import dev.healthcheck.urlcheck.core.InvalidUrlException
+import dev.healthcheck.urlcheck.core.NO_HTTP_STATUS
+import dev.healthcheck.urlcheck.core.RedirectFollower
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -24,10 +32,22 @@ class HealthCheckServiceTest {
         maxRedirects: Int = 5,
         readTimeout: Duration = Duration.ofSeconds(2),
         extraPorts: Set<Int> = emptySet(),
+        perIp: Long = 1_000,
+        perHost: Long = 1_000,
     ): HealthCheckService {
         val client = loopbackAllowingClient(setOf(80, 443, server.port) + extraPorts, readTimeout = readTimeout)
-        return HealthCheckService(RedirectFollower(client, maxRedirects, Duration.ofSeconds(10)))
+        val generous = limit(1_000)
+        return HealthCheckService(
+            RedirectFollower(client, maxRedirects, Duration.ofSeconds(10)),
+            UrlCache(Duration.ofMinutes(5)),
+            ClientRateLimiter(limit(perIp), generous, generous),
+            HostRateLimiter(limit(perHost)),
+        )
     }
+
+    private fun limit(capacity: Long) = HealthCheckProperties.Limit(capacity, Duration.ofMinutes(10))
+
+    private fun HealthCheckService.healthCheck(url: String) = healthCheck(url, "203.0.113.1")
 
     private fun url(path: String = "/") = "http://127.0.0.1:${server.port}$path"
 
@@ -179,5 +199,53 @@ class HealthCheckServiceTest {
         assertThatThrownBy { service().healthCheck("ftp://example.com") }
             .isInstanceOf(InvalidUrlException::class.java)
         assertThat(server.requestCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `serves a repeated url from the cache without calling the site again`() {
+        respond(200)
+        val service = service()
+
+        val first = service.healthCheck(url())
+        val second = service.healthCheck(url())
+
+        assertThat(second).isEqualTo(first)
+        assertThat(server.requestCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `rejects a host over its limit without calling the site and does not charge cached urls`() {
+        respond(200)
+        val service = service(perHost = 1)
+
+        service.healthCheck(url("/a"))
+        val cached = service.healthCheck(url("/a"))
+        val limited = service.healthCheck(url("/b"))
+
+        assertThat(cached.status).isEqualTo(HealthStatus.UP)
+        assertThat(limited.status).isEqualTo(HealthStatus.REJECTED)
+        assertThat(limited.reason).isEqualTo(HealthReason.HOST_RATE_LIMITED)
+        assertThat(server.requestCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `rejects a client over its limit before calling the site`() {
+        respond(200)
+        val service = service(perIp = 1)
+        service.healthCheck(url())
+
+        assertThatThrownBy { service.healthCheck(url("/other")) }
+            .isInstanceOf(RateLimitExceededException::class.java)
+        assertThat(server.requestCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `does not charge the client for an invalid url`() {
+        respond(200)
+        val service = service(perIp = 1)
+
+        assertThatThrownBy { service.healthCheck("ftp://example.com") }.isInstanceOf(InvalidUrlException::class.java)
+
+        assertThat(service.healthCheck(url()).status).isEqualTo(HealthStatus.UP)
     }
 }

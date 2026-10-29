@@ -26,6 +26,10 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:5.5.0")
 
+    implementation("com.bucket4j:bucket4j_jdk17-core:8.21.0")
+
+    implementation("com.github.ben-manes.caffeine:caffeine")
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
