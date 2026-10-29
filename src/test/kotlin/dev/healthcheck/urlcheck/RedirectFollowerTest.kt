@@ -1,6 +1,6 @@
 package dev.healthcheck.urlcheck
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.security.RejectedAddressException
 import dev.healthcheck.security.loopbackAllowingClient
 import mockwebserver3.MockResponse
@@ -76,7 +76,7 @@ class RedirectFollowerTest {
             .isInstanceOf(FollowFailedException::class.java)
             .cause()
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -88,7 +88,7 @@ class RedirectFollowerTest {
             .isInstanceOf(FollowFailedException::class.java)
             .cause()
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -100,7 +100,7 @@ class RedirectFollowerTest {
             .isInstanceOf(FollowFailedException::class.java)
             .cause()
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PORT_NOT_ALLOWED)
+                assertThat(it.reason).isEqualTo(HealthReason.PORT_NOT_ALLOWED)
             }
     }
 

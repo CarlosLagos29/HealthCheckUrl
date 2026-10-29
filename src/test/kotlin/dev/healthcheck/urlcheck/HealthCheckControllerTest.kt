@@ -1,7 +1,9 @@
 package dev.healthcheck.urlcheck
 
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.verifyNoInteractions
@@ -23,44 +25,54 @@ class HealthCheckControllerTest {
     @MockitoBean
     private lateinit var healthChecker: HealthChecker
 
+    @MockitoBean
+    private lateinit var batchHealthChecker: BatchHealthChecker
+
     private fun postCheck(body: String): ResultActionsDsl =
         mockMvc.post("/api/v1/health-checks") {
             contentType = MediaType.APPLICATION_JSON
             content = body
         }
 
-    private fun upResponse() = HealthCheckResponse(
+    private fun postBatch(body: String): ResultActionsDsl =
+        mockMvc.post("/api/v1/health-checks/batch") {
+            contentType = MediaType.APPLICATION_JSON
+            content = body
+        }
+
+    private fun invalidResult() = HealthCheckResult(
+        url = "ftp://example.com",
+        finalUrl = "ftp://example.com",
+        status = HealthStatus.INVALID,
+        latencyMs = 0,
+        redirects = 0,
+        reason = HealthReason.INVALID_URL,
+        checkedAt = Instant.parse("2026-10-28T10:00:00Z"),
+    )
+
+    private fun upResult() = HealthCheckResult(
         url = "https://example.com/",
         finalUrl = "https://example.com/",
         status = HealthStatus.UP,
-        httpStatus = null,
+        httpStatus = 200,
         latencyMs = 42,
         redirects = 0,
-        reason = null,
+        reason = HealthReason.SUCCESS,
         checkedAt = Instant.parse("2026-10-28T10:00:00Z"),
     )
 
     @Test
     fun `returns the check result`() {
-        given(healthChecker.healthCheck("example.com")).willReturn(upResponse())
+        given(healthChecker.healthCheck("example.com")).willReturn(upResult())
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isOk() }
             jsonPath("$.url") { value("https://example.com/") }
             jsonPath("$.status") { value("UP") }
+            jsonPath("$.reason") { value("SUCCESS") }
+            jsonPath("$.message") { value("The site is up and responding") }
             jsonPath("$.latencyMs") { value(42) }
             jsonPath("$.checkedAt") { value("2026-10-28T10:00:00Z") }
-        }
-    }
-
-    @Test
-    fun `omits httpStatus and reason when they are null`() {
-        given(healthChecker.healthCheck(anyString())).willReturn(upResponse())
-
-        postCheck("""{"url": "example.com"}""").andExpect {
-            status { isOk() }
-            jsonPath("$.httpStatus") { doesNotExist() }
-            jsonPath("$.reason") { doesNotExist() }
         }
     }
 
@@ -118,6 +130,57 @@ class HealthCheckControllerTest {
             status { isInternalServerError() }
             content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
             jsonPath("$.detail") { value("Unexpected error") }
+        }
+    }
+
+    @Test
+    fun `returns the batch results in order inside results`() {
+        given(batchHealthChecker.healthCheckBatch(listOf("example.com", "ftp://example.com")))
+            .willReturn(listOf(upResult(), invalidResult()))
+
+        postBatch("""{"urls": ["example.com", "ftp://example.com"]}""").andExpect {
+            status { isOk() }
+            jsonPath("$.results.length()") { value(2) }
+            jsonPath("$.results[0].url") { value("https://example.com/") }
+            jsonPath("$.results[0].status") { value("UP") }
+            jsonPath("$.results[1].url") { value("ftp://example.com") }
+            jsonPath("$.results[1].status") { value("INVALID") }
+            jsonPath("$.results[1].reason") { value("INVALID_URL") }
+            jsonPath("$.results[1].message") { value("The URL is not valid") }
+            jsonPath("$.results[1].finalUrl") { value("ftp://example.com") }
+        }
+    }
+
+    @Test
+    fun `rejects an empty batch with field errors`() {
+        postBatch("""{"urls": []}""").andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+            jsonPath("$.errors.urls") { value("must not be empty") }
+        }
+
+        verifyNoInteractions(batchHealthChecker)
+    }
+
+    @Test
+    fun `rejects a batch body without urls`() {
+        postBatch("{}").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value("Failed to read request") }
+        }
+
+        verifyNoInteractions(batchHealthChecker)
+    }
+
+    @Test
+    fun `maps a batch that is too large to a 400`() {
+        given(batchHealthChecker.healthCheckBatch(anyList())).willThrow(BatchTooLargeException(5))
+
+        postBatch("""{"urls": ["a.com", "b.com", "c.com", "d.com", "e.com", "f.com"]}""").andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+            jsonPath("$.title") { value("Batch too large") }
+            jsonPath("$.detail") { value("A batch accepts at most 5 URLs") }
         }
     }
 }

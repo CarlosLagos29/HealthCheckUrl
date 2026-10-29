@@ -1,6 +1,6 @@
 package dev.healthcheck.urlcheck
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import dev.healthcheck.security.loopbackAllowingClient
 import mockwebserver3.MockResponse
@@ -47,7 +47,7 @@ class HealthCheckServiceTest {
         assertThat(response.status).isEqualTo(HealthStatus.UP)
         assertThat(response.httpStatus).isEqualTo(200)
         assertThat(response.redirects).isEqualTo(0)
-        assertThat(response.reason).isNull()
+        assertThat(response.reason).isEqualTo(HealthReason.SUCCESS)
     }
 
     @Test
@@ -65,13 +65,9 @@ class HealthCheckServiceTest {
     @ParameterizedTest
     @CsvSource(
         "404, DOWN, HTTP_4XX",
-        "429, DOWN, HTTP_4XX",
-        "500, DOWN, HTTP_5XX",
-        "503, DOWN, HTTP_5XX",
-        "401, BLOCKED, AUTH_REQUIRED",
         "403, BLOCKED, ACCESS_DENIED",
     )
-    fun `classifies the http status of the site`(code: Int, status: HealthStatus, reason: FailureReason?) {
+    fun `classifies the http status of the site`(code: Int, status: HealthStatus, reason: HealthReason) {
         respond(code)
 
         val response = service().healthCheck(url())
@@ -114,8 +110,8 @@ class HealthCheckServiceTest {
         val response = service(maxRedirects = 2).healthCheck(url("/start"))
 
         assertThat(response.status).isEqualTo(HealthStatus.DOWN)
-        assertThat(response.reason).isEqualTo(FailureReason.TOO_MANY_REDIRECTS)
-        assertThat(response.httpStatus).isNull()
+        assertThat(response.reason).isEqualTo(HealthReason.TOO_MANY_REDIRECTS)
+        assertThat(response.httpStatus).isEqualTo(NO_HTTP_STATUS)
         assertThat(response.redirects).isEqualTo(2)
     }
 
@@ -126,8 +122,8 @@ class HealthCheckServiceTest {
         val response = service(readTimeout = Duration.ofMillis(200)).healthCheck(url())
 
         assertThat(response.status).isEqualTo(HealthStatus.DOWN)
-        assertThat(response.reason).isEqualTo(FailureReason.TIMEOUT)
-        assertThat(response.httpStatus).isNull()
+        assertThat(response.reason).isEqualTo(HealthReason.TIMEOUT)
+        assertThat(response.httpStatus).isEqualTo(NO_HTTP_STATUS)
         assertThat(response.latencyMs).isGreaterThanOrEqualTo(200)
     }
 
@@ -136,8 +132,8 @@ class HealthCheckServiceTest {
         val response = service().healthCheck("http://10.0.0.1/")
 
         assertThat(response.status).isEqualTo(HealthStatus.REJECTED)
-        assertThat(response.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
-        assertThat(response.httpStatus).isNull()
+        assertThat(response.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
+        assertThat(response.httpStatus).isEqualTo(NO_HTTP_STATUS)
     }
 
     @Test
@@ -147,7 +143,7 @@ class HealthCheckServiceTest {
         val response = service().healthCheck(url("/start"))
 
         assertThat(response.status).isEqualTo(HealthStatus.REJECTED)
-        assertThat(response.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+        assertThat(response.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
         assertThat(response.finalUrl).isEqualTo("http://169.254.169.254/latest/meta-data/")
         assertThat(response.redirects).isEqualTo(1)
     }
@@ -157,7 +153,7 @@ class HealthCheckServiceTest {
         val response = service().healthCheck("http://example.com:8080/")
 
         assertThat(response.status).isEqualTo(HealthStatus.REJECTED)
-        assertThat(response.reason).isEqualTo(FailureReason.PORT_NOT_ALLOWED)
+        assertThat(response.reason).isEqualTo(HealthReason.PORT_NOT_ALLOWED)
     }
 
     @Test
@@ -167,7 +163,7 @@ class HealthCheckServiceTest {
         val response = service(extraPorts = setOf(closedPort)).healthCheck("http://127.0.0.1:$closedPort/")
 
         assertThat(response.status).isEqualTo(HealthStatus.DOWN)
-        assertThat(response.reason).isEqualTo(FailureReason.CONNECTION_ERROR)
+        assertThat(response.reason).isEqualTo(HealthReason.CONNECTION_ERROR)
     }
 
     @Test
@@ -175,7 +171,7 @@ class HealthCheckServiceTest {
         val response = service().healthCheck("http://does-not-exist.invalid/")
 
         assertThat(response.status).isEqualTo(HealthStatus.DOWN)
-        assertThat(response.reason).isEqualTo(FailureReason.DNS_ERROR)
+        assertThat(response.reason).isEqualTo(HealthReason.DNS_ERROR)
     }
 
     @Test

@@ -1,6 +1,6 @@
 package dev.healthcheck.urlcheck
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import dev.healthcheck.security.RejectedAddressException
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -20,14 +20,14 @@ class HealthCheckMapperTest {
         val response = HealthCheckMapper.fromResponse(url, followed, 120, checkedAt)
 
         assertThat(response).isEqualTo(
-            HealthCheckResponse(
+            HealthCheckResult(
                 url = "https://example.com/",
                 finalUrl = "https://example.com/missing",
                 status = HealthStatus.DOWN,
                 httpStatus = 404,
                 latencyMs = 120,
                 redirects = 2,
-                reason = FailureReason.HTTP_4XX,
+                reason = HealthReason.HTTP_4XX,
                 checkedAt = checkedAt,
             ),
         )
@@ -38,20 +38,20 @@ class HealthCheckMapperTest {
         val failure = FollowFailedException(
             "http://169.254.169.254/".toHttpUrl(),
             1,
-            RejectedAddressException(FailureReason.PRIVATE_ADDRESS, "Host 169.254.169.254 is a private address, rejected by the API"),
+            RejectedAddressException(HealthReason.PRIVATE_ADDRESS, "Host 169.254.169.254 is a private address, rejected by the API"),
         )
 
         val response = HealthCheckMapper.fromFailure(url, failure, 5, checkedAt)
 
         assertThat(response).isEqualTo(
-            HealthCheckResponse(
+            HealthCheckResult(
                 url = "https://example.com/",
                 finalUrl = "http://169.254.169.254/",
                 status = HealthStatus.REJECTED,
-                httpStatus = null,
+                httpStatus = NO_HTTP_STATUS,
                 latencyMs = 5,
                 redirects = 1,
-                reason = FailureReason.PRIVATE_ADDRESS,
+                reason = HealthReason.PRIVATE_ADDRESS,
                 checkedAt = checkedAt,
             ),
         )
