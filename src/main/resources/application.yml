@@ -1,8 +1,19 @@
 server:
   port: 9090
 
+logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr(%-14replace(%thread){'^.*-exec-', 'exec-'}){faint} %clr(%-22logger{0}){cyan} : %m%n%wEx"
+  level:
+    root: WARN
+    dev.healthcheck: INFO
+    org.springframework.boot.tomcat.TomcatWebServer: INFO
+
 springdoc:
+  api-docs:
+    enabled: true
   swagger-ui:
+    enabled: true
     path: /docs
     try-it-out-enabled: true
     operations-sorter: alpha

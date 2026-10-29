@@ -1,6 +1,6 @@
 package dev.healthcheck.error
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.toLogSafe
 import dev.healthcheck.urlcheck.BatchTooLargeException
 import dev.healthcheck.urlcheck.InvalidUrlException
@@ -30,7 +30,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         LOG.warn("Invalid URL: {}", ex.message.orEmpty().toLogSafe())
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.message).apply {
             title = "Invalid URL"
-            setProperty("reason", FailureReason.INVALID_URL)
+            setProperty("reason", HealthReason.INVALID_URL)
         }
     }
 

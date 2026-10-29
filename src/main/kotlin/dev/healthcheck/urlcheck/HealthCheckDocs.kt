@@ -44,7 +44,7 @@ annotation class HealthCheckDocs
     summary = "Check several URLs at once",
     description = "Checks up to the batch limit (5 by default) in parallel and returns one result per URL, in the " +
         "same order. Each URL follows the same rules as a single check. Repeated URLs are checked once. An invalid " +
-        "URL does not fail the batch: its result is REJECTED with reason INVALID_URL. URLs still running when the " +
+        "URL does not fail the batch: its result is INVALID with reason INVALID_URL. URLs still running when the " +
         "batch timeout ends are DOWN with reason TIMEOUT.",
 )
 @ApiResponse(
@@ -66,34 +66,39 @@ annotation class HealthCheckDocs
 annotation class BatchHealthCheckDocs
 
 private const val UP_EXAMPLE = """
-{"url": "https://example.com/", "finalUrl": "https://example.com/", "status": "UP", "httpStatus": 200,
- "latencyMs": 142, "redirects": 0, "reason": null, "checkedAt": "2026-10-28T10:00:00Z"}
+{"url": "https://example.com/", "finalUrl": "https://example.com/", "status": "UP", "httpStatus": 200, "latencyMs": 142,
+ "redirects": 0, "reason": "SUCCESS", "message": "The site is up and responding", "checkedAt": "2026-10-28T10:00:00Z"}
 """
 
 private const val DOWN_EXAMPLE = """
 {"url": "https://example.com/missing", "finalUrl": "https://example.com/missing", "status": "DOWN", "httpStatus": 404,
- "latencyMs": 98, "redirects": 0, "reason": "HTTP_4XX", "checkedAt": "2026-10-28T10:00:00Z"}
+ "latencyMs": 98, "redirects": 0, "reason": "HTTP_4XX", "message": "The site answered with a client error (4xx)",
+ "checkedAt": "2026-10-28T10:00:00Z"}
 """
 
 private const val BLOCKED_EXAMPLE = """
 {"url": "https://example.com/admin", "finalUrl": "https://example.com/admin", "status": "BLOCKED", "httpStatus": 403,
- "latencyMs": 120, "redirects": 0, "reason": "ACCESS_DENIED", "checkedAt": "2026-10-28T10:00:00Z"}
+ "latencyMs": 120, "redirects": 0, "reason": "ACCESS_DENIED", "message": "The site denied access to the checker",
+ "checkedAt": "2026-10-28T10:00:00Z"}
+"""
+
+private const val REJECTED_EXAMPLE = """
+{"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "REJECTED", "httpStatus": 0,
+ "latencyMs": 1, "redirects": 0, "reason": "PRIVATE_ADDRESS", "message": "Private or internal addresses are not allowed",
+ "checkedAt": "2026-10-28T10:00:00Z"}
 """
 
 private const val BATCH_EXAMPLE = """
 {"results": [
- {"url": "https://github.com/", "finalUrl": "https://github.com/", "status": "UP", "httpStatus": 200,
-  "latencyMs": 310, "redirects": 0, "reason": null, "checkedAt": "2026-10-28T10:00:00Z"},
+ {"url": "https://github.com/", "finalUrl": "https://github.com/", "status": "UP", "httpStatus": 200, "latencyMs": 310,
+  "redirects": 0, "reason": "SUCCESS", "message": "The site is up and responding", "checkedAt": "2026-10-28T10:00:00Z"},
  {"url": "https://github.com/this-page-does-not-exist", "finalUrl": "https://github.com/this-page-does-not-exist",
-  "status": "DOWN", "httpStatus": 404, "latencyMs": 220, "redirects": 0, "reason": "HTTP_4XX", "checkedAt": "2026-10-28T10:00:00Z"},
- {"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "REJECTED", "httpStatus": null,
-  "latencyMs": 1, "redirects": 0, "reason": "PRIVATE_ADDRESS", "checkedAt": "2026-10-28T10:00:00Z"},
- {"url": "ftp://example.com", "finalUrl": null, "status": "REJECTED", "httpStatus": null,
-  "latencyMs": 0, "redirects": 0, "reason": "INVALID_URL", "checkedAt": "2026-10-28T10:00:00Z"}
+  "status": "DOWN", "httpStatus": 404, "latencyMs": 220, "redirects": 0, "reason": "HTTP_4XX",
+  "message": "The site answered with a client error (4xx)", "checkedAt": "2026-10-28T10:00:00Z"},
+ {"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "REJECTED", "httpStatus": 0,
+  "latencyMs": 1, "redirects": 0, "reason": "PRIVATE_ADDRESS", "message": "Private or internal addresses are not allowed",
+  "checkedAt": "2026-10-28T10:00:00Z"},
+ {"url": "ftp://example.com", "finalUrl": "ftp://example.com", "status": "INVALID", "httpStatus": 0, "latencyMs": 0,
+  "redirects": 0, "reason": "INVALID_URL", "message": "The URL is not valid", "checkedAt": "2026-10-28T10:00:00Z"}
 ]}
-"""
-
-private const val REJECTED_EXAMPLE = """
-{"url": "http://169.254.169.254/", "finalUrl": "http://169.254.169.254/", "status": "REJECTED", "httpStatus": null,
- "latencyMs": 1, "redirects": 0, "reason": "PRIVATE_ADDRESS", "checkedAt": "2026-10-28T10:00:00Z"}
 """

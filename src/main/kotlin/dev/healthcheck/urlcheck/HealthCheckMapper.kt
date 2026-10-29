@@ -1,6 +1,6 @@
 package dev.healthcheck.urlcheck
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import okhttp3.HttpUrl
 import java.time.Instant
@@ -27,7 +27,6 @@ object HealthCheckMapper {
             url = url.toString(),
             finalUrl = failure.lastUrl.toString(),
             status = classification.status,
-            httpStatus = null,
             latencyMs = latencyMs,
             redirects = failure.redirects,
             reason = classification.reason,
@@ -38,24 +37,22 @@ object HealthCheckMapper {
     fun fromInvalidUrl(rawUrl: String, checkedAt: Instant): HealthCheckResult =
         HealthCheckResult(
             url = rawUrl,
-            finalUrl = null,
-            status = HealthStatus.REJECTED,
-            httpStatus = null,
+            finalUrl = rawUrl,
+            status = HealthStatus.INVALID,
             latencyMs = 0,
             redirects = 0,
-            reason = FailureReason.INVALID_URL,
+            reason = HealthReason.INVALID_URL,
             checkedAt = checkedAt,
         )
 
     fun fromBatchTimeout(url: String, latencyMs: Long, checkedAt: Instant): HealthCheckResult =
         HealthCheckResult(
             url = url,
-            finalUrl = null,
+            finalUrl = url,
             status = HealthStatus.DOWN,
-            httpStatus = null,
             latencyMs = latencyMs,
             redirects = 0,
-            reason = FailureReason.TIMEOUT,
+            reason = HealthReason.TIMEOUT,
             checkedAt = checkedAt,
         )
 }

@@ -1,6 +1,6 @@
 package dev.healthcheck.security
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import okhttp3.Dns
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -31,7 +31,7 @@ class SafeDnsTest {
     fun `rejects host resolving to a private address`() {
         assertThatThrownBy { resolvingTo("10.0.0.1").lookup("example.com") }
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -39,7 +39,7 @@ class SafeDnsTest {
     fun `rejects host when any resolved address is blocked`() {
         assertThatThrownBy { resolvingTo("8.8.8.8", "127.0.0.1").lookup("example.com") }
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
             }
     }
 
@@ -47,7 +47,7 @@ class SafeDnsTest {
     fun `rejects localhost with the real system resolver`() {
         assertThatThrownBy { SafeDns(IpAddressValidator()).lookup("localhost") }
             .isInstanceOfSatisfying(RejectedAddressException::class.java) {
-                assertThat(it.reason).isEqualTo(FailureReason.PRIVATE_ADDRESS)
+                assertThat(it.reason).isEqualTo(HealthReason.PRIVATE_ADDRESS)
             }
     }
 

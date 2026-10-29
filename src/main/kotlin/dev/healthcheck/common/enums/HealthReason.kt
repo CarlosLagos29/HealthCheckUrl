@@ -1,6 +1,7 @@
 package dev.healthcheck.common.enums
 
-enum class FailureReason {
+enum class HealthReason {
+    SUCCESS,
     TIMEOUT,
     DNS_ERROR,
     CONNECTION_ERROR,

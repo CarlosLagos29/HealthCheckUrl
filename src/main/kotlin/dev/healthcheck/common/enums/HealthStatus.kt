@@ -5,4 +5,5 @@ enum class HealthStatus {
     DOWN,
     BLOCKED,
     REJECTED,
+    INVALID,
 }

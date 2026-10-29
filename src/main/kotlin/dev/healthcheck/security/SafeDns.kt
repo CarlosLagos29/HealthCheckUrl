@@ -1,6 +1,6 @@
 package dev.healthcheck.security
 
-import dev.healthcheck.common.enums.FailureReason
+import dev.healthcheck.common.enums.HealthReason
 import okhttp3.Dns
 import java.net.InetAddress
 
@@ -14,7 +14,7 @@ class SafeDns(
 
         if (addresses.any { validator.isBlocked(it) }) {
             throw RejectedAddressException(
-                FailureReason.PRIVATE_ADDRESS,
+                HealthReason.PRIVATE_ADDRESS,
                 "Host $hostname resolves to a private address, rejected by the API",
             )
         }
