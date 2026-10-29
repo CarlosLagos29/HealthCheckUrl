@@ -37,13 +37,9 @@ class HealthCheckService(
     }
 
     override fun check(target: HttpUrl): HealthCheckResult {
-        urlCache.get(target)?.let {
-            LOG.debug("Cache hit for {}", target)
-            return it
-        }
+        urlCache.get(target)?.let { return it }
 
         if (!hostRateLimiter.tryAcquire(target.host)) {
-            LOG.debug("Host rate limit reached for {}", target.host)
             return HealthCheckMapper.fromHostRateLimited(target, Instant.now())
         }
 

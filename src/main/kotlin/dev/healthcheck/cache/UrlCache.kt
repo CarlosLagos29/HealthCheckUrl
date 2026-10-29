@@ -4,11 +4,15 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import dev.healthcheck.urlcheck.core.HealthCheckResult
 import okhttp3.HttpUrl
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.Instant
 
-class UrlCache(ttl: Duration) {
+class UrlCache(private val ttl: Duration) {
 
     private companion object {
+        val LOG: Logger = LoggerFactory.getLogger(UrlCache::class.java)
         const val MAX_ENTRIES = 10_000L
     }
 
@@ -17,7 +21,17 @@ class UrlCache(ttl: Duration) {
         .maximumSize(MAX_ENTRIES)
         .build()
 
-    fun get(url: HttpUrl): HealthCheckResult? = results.getIfPresent(url.toString())
+    fun get(url: HttpUrl): HealthCheckResult? {
+        val result = results.getIfPresent(url.toString())
+        if (result != null) {
+            LOG.debug("Cache hit: url={} checkedAgo={}s", url, Duration.between(result.checkedAt, Instant.now()).toSeconds())
+        }
+        return result
+    }
 
-    fun save(url: HttpUrl, result: HealthCheckResult) = results.put(url.toString(), result)
+    fun save(url: HttpUrl, result: HealthCheckResult) {
+        results.put(url.toString(), result)
+        LOG.info("Cached: url={}", url)
+        LOG.debug("Cached detail: url={} status={} reason={} ttl={}", url, result.status, result.reason, ttl)
+    }
 }

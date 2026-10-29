@@ -4,6 +4,7 @@ import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import dev.healthcheck.config.HealthCheckProperties
 import dev.healthcheck.ratelimit.ClientRateLimiter
+import dev.healthcheck.ratelimit.RateLimitExceededException
 import dev.healthcheck.urlcheck.core.HealthCheckResult
 import dev.healthcheck.urlcheck.core.NO_HTTP_STATUS
 import dev.healthcheck.urlcheck.single.HealthChecker
@@ -67,9 +68,14 @@ class HealthCheckBatchServiceTest {
             cache = HealthCheckProperties.Cache(Duration.ofMinutes(1)),
         )
 
-    private fun service(checker: HealthChecker, properties: HealthCheckProperties = properties()): HealthCheckBatchService {
-        val generous = HealthCheckProperties.Limit(1_000, Duration.ofMinutes(1))
-        return HealthCheckBatchService(checker, ClientRateLimiter(generous, generous, generous), properties)
+    private fun service(
+        checker: HealthChecker,
+        properties: HealthCheckProperties = properties(),
+        perIp: Long = 1_000,
+    ): HealthCheckBatchService {
+        val generous = HealthCheckProperties.Limit(1_000, Duration.ofMinutes(10))
+        val ipLimit = HealthCheckProperties.Limit(perIp, Duration.ofMinutes(10))
+        return HealthCheckBatchService(checker, ClientRateLimiter(ipLimit, generous, generous), properties)
     }
 
     private fun HealthCheckBatchService.healthCheckBatch(urls: List<String>) = healthCheckBatch(urls, "203.0.113.1")
@@ -165,5 +171,15 @@ class HealthCheckBatchServiceTest {
         assertThatThrownBy { service(checker).healthCheckBatch(listOf("a.com")) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessage("boom")
+    }
+
+    @Test
+    fun `charges the client only for valid and unique urls`() {
+        val service = service(FakeHealthChecker(), perIp = 2)
+
+        service.healthCheckBatch(listOf("a.com", "https://a.com/", "ftp://a.com", "b.com"))
+
+        assertThatThrownBy { service.healthCheckBatch(listOf("c.com")) }
+            .isInstanceOf(RateLimitExceededException::class.java)
     }
 }

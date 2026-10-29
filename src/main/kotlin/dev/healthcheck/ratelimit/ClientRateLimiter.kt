@@ -2,8 +2,11 @@ package dev.healthcheck.ratelimit
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import dev.healthcheck.common.toLogSafe
 import dev.healthcheck.config.HealthCheckProperties
 import io.github.bucket4j.Bucket
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Duration
 
 enum class RateLimitScope { SINGLE, BATCH }
@@ -17,6 +20,7 @@ class ClientRateLimiter(
 ) {
 
     private companion object {
+        val LOG: Logger = LoggerFactory.getLogger(ClientRateLimiter::class.java)
         const val MAX_TRACKED_IPS = 10_000L
     }
 
@@ -33,18 +37,28 @@ class ClientRateLimiter(
     fun acquire(clientIp: String, scope: RateLimitScope, cost: Long) {
         if (cost == 0L) return
 
+        val ip = clientIp.toLogSafe()
         val global = globals.getValue(scope)
-        reserve(global, cost)
-        try {
-            reserve(ipBuckets.get(clientIp) { bucketOf(perIp) }, cost)
+        val globalLeft = reserve(global, cost, "global", ip, scope)
+        val ipLeft = try {
+            reserve(ipBuckets.get(clientIp) { bucketOf(perIp) }, cost, "ip", ip, scope)
         } catch (e: RateLimitExceededException) {
             global.addTokens(cost)
+            LOG.debug("Refunded {} to the global {} bucket", cost, scope)
             throw e
         }
+
+        LOG.info("Rate limit registered: ip={} scope={} cost={}", ip, scope, cost)
+        LOG.debug("Rate limit left: ip={} scope={} global={} ip={}", ip, scope, globalLeft, ipLeft)
     }
 
-    private fun reserve(bucket: Bucket, cost: Long) {
+    private fun reserve(bucket: Bucket, cost: Long, name: String, ip: String, scope: RateLimitScope): Long {
         val probe = bucket.tryConsumeAndReturnRemaining(cost)
-        if (!probe.isConsumed) throw RateLimitExceededException(Duration.ofNanos(probe.nanosToWaitForRefill))
+        if (!probe.isConsumed) {
+            val retryAfter = Duration.ofNanos(probe.nanosToWaitForRefill)
+            LOG.debug("Rate limit hit on the {} bucket: ip={} scope={} cost={} retryIn={}", name, ip, scope, cost, retryAfter)
+            throw RateLimitExceededException(retryAfter)
+        }
+        return probe.remainingTokens
     }
 }

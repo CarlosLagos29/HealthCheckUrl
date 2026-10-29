@@ -34,7 +34,7 @@ healthcheck:
   rate-limit:
     per-ip:
       capacity: 10
-      period: 1m
+      period: 10m
     global-single:
       capacity: 25
       period: 10m
@@ -45,4 +45,4 @@ healthcheck:
       capacity: 3
       period: 10m
   cache:
-    ttl: 1m
+    ttl: 5m

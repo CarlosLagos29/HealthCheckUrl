@@ -3,6 +3,7 @@ package dev.healthcheck.urlcheck
 import dev.healthcheck.common.enums.HealthReason
 import dev.healthcheck.common.enums.HealthStatus
 import dev.healthcheck.config.HealthCheckProperties
+import dev.healthcheck.ratelimit.RateLimitExceededException
 import dev.healthcheck.urlcheck.batch.BatchHealthChecker
 import dev.healthcheck.urlcheck.core.HealthCheckResult
 import dev.healthcheck.urlcheck.core.InvalidUrlException
@@ -19,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
 import org.springframework.test.web.servlet.post
+import java.time.Duration
 import java.time.Instant
 
 @WebMvcTest(HealthCheckController::class)
@@ -187,5 +189,18 @@ class HealthCheckControllerTest {
         }
 
         verifyNoInteractions(batchHealthChecker)
+    }
+
+    @Test
+    fun `answers 429 with Retry-After when the rate limit is exceeded`() {
+        given(healthChecker.healthCheck(anyString(), anyString())).willThrow(RateLimitExceededException(Duration.ofMillis(1_500)))
+
+        postCheck("""{"url": "example.com"}""").andExpect {
+            status { isTooManyRequests() }
+            header { string("Retry-After", "2") }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+            jsonPath("$.title") { value("Too many requests") }
+            jsonPath("$.detail") { value("Rate limit exceeded. Try again in 2 seconds.") }
+        }
     }
 }
