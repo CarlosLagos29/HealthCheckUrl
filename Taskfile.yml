@@ -1,6 +1,12 @@
 version: '3'
 
 tasks:
+  test:
+    desc: Run the tests (needs JDK 17+ in JAVA_HOME) and generate the coverage report
+    cmds:
+      - ./gradlew test
+      - echo "Coverage report at build/reports/jacoco/test/html/index.html"
+
   start:
     desc: Build the image if needed, start the API and follow its logs (Ctrl+C stops the logs, not the API)
     cmds:
