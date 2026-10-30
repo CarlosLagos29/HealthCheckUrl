@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  start:
+    desc: Build the image if needed, start the API and follow its logs (Ctrl+C stops the logs, not the API)
+    cmds:
+      - docker compose up --build -d
+      - docker compose logs -f
+
+  logs:
+    desc: Follow the API logs
+    cmds:
+      - docker compose logs -f
+
+  stop:
+    desc: Stop and remove the container (keeps the image)
+    cmds:
+      - docker compose down
+
+  delete:
+    desc: Remove everything this project created in Docker (container, network, volumes and image)
+    cmds:
+      - docker compose down --rmi all --volumes --remove-orphans

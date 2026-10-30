@@ -1,0 +1,12 @@
+.git
+.github
+.gradle
+.idea
+.kotlin
+build
+*.md
+LICENSE
+.editorconfig
+compose.yaml
+Taskfile.yml
+render.yaml

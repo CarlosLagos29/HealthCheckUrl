@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: healthcheckurl
+    runtime: docker
+    plan: free
+    region: virginia
+    branch: master
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: checksPass
