@@ -9,10 +9,10 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-private fun checkFrom(port: Int, forwardedFor: String): Int {
+private fun checkFrom(port: Int, connectingIp: String): Int {
     val request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port/api/v1/health-checks"))
         .header("Content-Type", "application/json")
-        .header("X-Forwarded-For", forwardedFor)
+        .header("CF-Connecting-IP", connectingIp)
         .POST(HttpRequest.BodyPublishers.ofString("""{"url": "http://10.0.0.1/"}"""))
         .build()
     return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.discarding()).statusCode()
@@ -28,7 +28,7 @@ class TrustedProxyClientIpTest {
     private var port: Int = 0
 
     @Test
-    fun `uses the forwarded client ip when the request comes from a trusted proxy`() {
+    fun `uses the client ip set by Cloudflare when the request comes from a trusted proxy`() {
         assertThat(checkFrom(port, "198.51.100.1")).isEqualTo(200)
         assertThat(checkFrom(port, "198.51.100.2")).isEqualTo(200)
     }
@@ -47,7 +47,7 @@ class UntrustedClientIpTest {
     private var port: Int = 0
 
     @Test
-    fun `ignores a forged X-Forwarded-For from an untrusted client`() {
+    fun `ignores a forged CF-Connecting-IP from an untrusted client`() {
         assertThat(checkFrom(port, "198.51.100.1")).isEqualTo(200)
         assertThat(checkFrom(port, "198.51.100.2")).isEqualTo(429)
     }
