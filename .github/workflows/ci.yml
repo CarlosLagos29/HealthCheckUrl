@@ -32,3 +32,7 @@ jobs:
       - name: Build and test
         run: ./gradlew check --no-daemon
 
+      - name: Build Docker image
+        if: github.event_name == 'pull_request'
+        run: docker build -t healthcheckurl .
+

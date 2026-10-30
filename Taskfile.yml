@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+  test:
+    desc: Run the tests (needs JDK 17+ in JAVA_HOME) and generate the coverage report
+    cmds:
+      - ./gradlew test
+      - echo "Coverage report at build/reports/jacoco/test/html/index.html"
+
+  start:
+    desc: Build the image if needed, start the API and follow its logs (Ctrl+C stops the logs, not the API)
+    cmds:
+      - docker compose up --build -d
+      - docker compose logs -f
+
+  logs:
+    desc: Follow the API logs
+    cmds:
+      - docker compose logs -f
+
+  stop:
+    desc: Stop and remove the container (keeps the image)
+    cmds:
+      - docker compose down
+
+  delete:
+    desc: Remove everything this project created in Docker (container, network, volumes and image)
+    cmds:
+      - docker compose down --rmi all --volumes --remove-orphans
