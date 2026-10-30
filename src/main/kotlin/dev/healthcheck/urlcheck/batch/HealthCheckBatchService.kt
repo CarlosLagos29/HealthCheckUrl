@@ -46,7 +46,10 @@ class HealthCheckBatchService(
                 timeout.toMillis(),
                 TimeUnit.MILLISECONDS,
             )
-            return targets.zip(futures).associate { (target, future) -> target to resultOf(target, future, timeout.toMillis()) }
+            return targets.zip(futures).associate { (target, future) ->
+                target to
+                    resultOf(target, future, timeout.toMillis())
+            }
         } finally {
             executor.shutdownNow()
         }

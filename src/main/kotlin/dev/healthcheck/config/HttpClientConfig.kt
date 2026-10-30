@@ -13,8 +13,8 @@ import java.net.Proxy
 class HttpClientConfig {
 
     @Bean
-    fun httpClient(properties: HealthCheckProperties, validator: IpAddressValidator): OkHttpClient {
-        return OkHttpClient.Builder()
+    fun httpClient(properties: HealthCheckProperties, validator: IpAddressValidator): OkHttpClient =
+        OkHttpClient.Builder()
             .connectTimeout(properties.timeouts.connect)
             .readTimeout(properties.timeouts.read)
             .followRedirects(false)
@@ -23,7 +23,6 @@ class HttpClientConfig {
             .proxy(Proxy.NO_PROXY)
             .addInterceptor(SafeUrlInterceptor(validator, properties.allowedPorts))
             .build()
-    }
 
     @Bean
     fun redirectFollower(httpClient: OkHttpClient, properties: HealthCheckProperties): RedirectFollower =

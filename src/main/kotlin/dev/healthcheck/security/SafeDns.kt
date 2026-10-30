@@ -4,10 +4,7 @@ import dev.healthcheck.common.enums.HealthReason
 import okhttp3.Dns
 import java.net.InetAddress
 
-class SafeDns(
-    private val validator: IpAddressValidator,
-    private val delegate: Dns = Dns.SYSTEM,
-) : Dns {
+class SafeDns(private val validator: IpAddressValidator, private val delegate: Dns = Dns.SYSTEM) : Dns {
 
     override fun lookup(hostname: String): List<InetAddress> {
         val addresses = delegate.lookup(hostname)

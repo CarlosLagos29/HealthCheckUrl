@@ -12,31 +12,13 @@ data class HealthCheckProperties(
     val rateLimit: RateLimit,
     val cache: Cache,
 ) {
-    data class Timeouts(
-        val connect: Duration,
-        val read: Duration,
-        val total: Duration,
-    )
+    data class Timeouts(val connect: Duration, val read: Duration, val total: Duration)
 
-    data class Batch(
-        val maxUrls: Int,
-        val concurrency: Int,
-        val timeout: Duration,
-    )
+    data class Batch(val maxUrls: Int, val concurrency: Int, val timeout: Duration)
 
-    data class RateLimit(
-        val perIp: Limit,
-        val globalSingle: Limit,
-        val globalBatch: Limit,
-        val perHost: Limit,
-    )
+    data class RateLimit(val perIp: Limit, val globalSingle: Limit, val globalBatch: Limit, val perHost: Limit)
 
-    data class Limit(
-        val capacity: Long,
-        val period: Duration,
-    )
+    data class Limit(val capacity: Long, val period: Duration)
 
-    data class Cache(
-        val ttl: Duration,
-    )
+    data class Cache(val ttl: Duration)
 }

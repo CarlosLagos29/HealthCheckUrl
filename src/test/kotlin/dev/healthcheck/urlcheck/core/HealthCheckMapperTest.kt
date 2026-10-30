@@ -38,7 +38,10 @@ class HealthCheckMapperTest {
         val failure = FollowFailedException(
             "http://169.254.169.254/".toHttpUrl(),
             1,
-            RejectedAddressException(HealthReason.PRIVATE_ADDRESS, "Host 169.254.169.254 is a private address, rejected by the API"),
+            RejectedAddressException(
+                HealthReason.PRIVATE_ADDRESS,
+                "Host 169.254.169.254 is a private address, rejected by the API",
+            ),
         )
 
         val response = HealthCheckMapper.fromFailure(url, failure, 5, checkedAt)

@@ -6,34 +6,61 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 
 data class HealthCheckResponse(
-    @Schema(description = "Normalized URL that was checked, or the URL as sent when it is invalid", example = "https://example.com/")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Normalized URL that was checked, or the URL as sent when it is invalid",
+        example = "https://example.com/",
+    )
     val url: String,
 
     @Schema(
-        description = "Last URL reached: the same as url unless there were redirects, or the hop where the check failed",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Last URL reached: the same as url unless there were " +
+            "redirects, or the hop where the check failed",
         example = "https://example.com/",
     )
     val finalUrl: String,
 
-    @Schema(description = "Result of the check", example = "UP")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Result of the check", example = "UP")
     val status: HealthStatus,
 
-    @Schema(description = "HTTP status code returned by the site. 0 when it never answered (DNS error, timeout, rejected, invalid)", example = "200")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "HTTP status code returned by the site. 0 when it never " +
+            "answered (DNS error, timeout, rejected, invalid)",
+        example = "200",
+    )
     val httpStatus: Int,
 
-    @Schema(description = "Total time in milliseconds, redirects included", example = "142")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Total time in milliseconds, redirects included",
+        example = "142",
+    )
     val latencyMs: Long,
 
-    @Schema(description = "Number of redirects followed", example = "0")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Number of redirects followed", example = "0")
     val redirects: Int,
 
-    @Schema(description = "Why the result is what it is: SUCCESS when UP, otherwise the cause", example = "SUCCESS")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Why the result is what it is: SUCCESS when UP, otherwise the cause",
+        example = "SUCCESS",
+    )
     val reason: HealthReason,
 
-    @Schema(description = "Human-readable explanation of the result", example = "The site is up and responding")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Human-readable explanation of the result",
+        example = "The site is up and responding",
+    )
     val message: String,
 
-    @Schema(description = "When the check was performed (UTC)", example = "2026-10-28T10:00:00Z")
+    @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "When the check was performed (UTC)",
+        example = "2026-10-28T10:00:00Z",
+    )
     val checkedAt: Instant,
 ) {
     companion object {

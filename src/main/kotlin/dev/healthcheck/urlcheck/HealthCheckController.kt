@@ -31,12 +31,19 @@ class HealthCheckController(
 
     @PostMapping
     @HealthCheckDocs
-    fun healthCheck(@Valid @RequestBody request: HealthCheckRequest, httpRequest: HttpServletRequest): HealthCheckResponse {
+    fun healthCheck(
+        @Valid @RequestBody request: HealthCheckRequest,
+        httpRequest: HttpServletRequest,
+    ): HealthCheckResponse {
         LOG.info("Health check requested: url={}", request.url.toLogSafe())
         val result = healthChecker.healthCheck(request.url, httpRequest.remoteAddr)
         LOG.info(
             "Health check done: url={} status={} reason={} httpStatus={} latencyMs={}",
-            result.url, result.status, result.reason, result.httpStatus, result.latencyMs,
+            result.url,
+            result.status,
+            result.reason,
+            result.httpStatus,
+            result.latencyMs,
         )
         return HealthCheckResponse.from(result)
     }

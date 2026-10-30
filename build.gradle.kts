@@ -6,6 +6,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    jacoco
 }
 
 group = "dev.healthcheck"
@@ -40,6 +42,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+springBoot {
+    buildInfo()
+}
+
 kotlin {
     jvmToolchain(21)
     compilerOptions {
@@ -70,4 +76,20 @@ tasks.test {
 
 tasks.jar {
     enabled = false
+}
+
+ktlint {
+    version.set("1.8.0")
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
 }

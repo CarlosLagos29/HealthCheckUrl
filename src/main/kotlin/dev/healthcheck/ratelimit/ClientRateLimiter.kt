@@ -56,7 +56,14 @@ class ClientRateLimiter(
         val probe = bucket.tryConsumeAndReturnRemaining(cost)
         if (!probe.isConsumed) {
             val retryAfter = Duration.ofNanos(probe.nanosToWaitForRefill)
-            LOG.debug("Rate limit hit on the {} bucket: ip={} scope={} cost={} retryIn={}", name, ip, scope, cost, retryAfter)
+            LOG.debug(
+                "Rate limit hit on the {} bucket: ip={} scope={} cost={} retryIn={}",
+                name,
+                ip,
+                scope,
+                cost,
+                retryAfter,
+            )
             throw RateLimitExceededException(retryAfter)
         }
         return probe.remainingTokens

@@ -53,20 +53,19 @@ class HealthCheckBatchServiceTest {
         }
     }
 
-    private fun properties(concurrency: Int = 5, timeout: Duration = Duration.ofSeconds(15)) =
-        HealthCheckProperties(
-            timeouts = HealthCheckProperties.Timeouts(Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofSeconds(10)),
-            maxRedirects = 5,
-            allowedPorts = setOf(80, 443),
-            batch = HealthCheckProperties.Batch(5, concurrency, timeout),
-            rateLimit = HealthCheckProperties.RateLimit(
-                perIp = HealthCheckProperties.Limit(10, Duration.ofMinutes(1)),
-                globalSingle = HealthCheckProperties.Limit(25, Duration.ofMinutes(10)),
-                globalBatch = HealthCheckProperties.Limit(50, Duration.ofMinutes(10)),
-                perHost = HealthCheckProperties.Limit(3, Duration.ofMinutes(10)),
-            ),
-            cache = HealthCheckProperties.Cache(Duration.ofMinutes(1)),
-        )
+    private fun properties(concurrency: Int = 5, timeout: Duration = Duration.ofSeconds(15)) = HealthCheckProperties(
+        timeouts = HealthCheckProperties.Timeouts(Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofSeconds(10)),
+        maxRedirects = 5,
+        allowedPorts = setOf(80, 443),
+        batch = HealthCheckProperties.Batch(5, concurrency, timeout),
+        rateLimit = HealthCheckProperties.RateLimit(
+            perIp = HealthCheckProperties.Limit(10, Duration.ofMinutes(1)),
+            globalSingle = HealthCheckProperties.Limit(25, Duration.ofMinutes(10)),
+            globalBatch = HealthCheckProperties.Limit(50, Duration.ofMinutes(10)),
+            perHost = HealthCheckProperties.Limit(3, Duration.ofMinutes(10)),
+        ),
+        cache = HealthCheckProperties.Cache(Duration.ofMinutes(1)),
+    )
 
     private fun service(
         checker: HealthChecker,
@@ -91,7 +90,9 @@ class HealthCheckBatchServiceTest {
     fun `checks repeated urls once and repeats the result in each position`() {
         val checker = FakeHealthChecker()
 
-        val results = service(checker).healthCheckBatch(listOf("github.com", "https://github.com", "https://github.com/"))
+        val results = service(
+            checker,
+        ).healthCheckBatch(listOf("github.com", "https://github.com", "https://github.com/"))
 
         assertThat(checker.calls).containsExactly("https://github.com/")
         assertThat(results).hasSize(3)
@@ -102,7 +103,9 @@ class HealthCheckBatchServiceTest {
     fun `marks an invalid url as INVALID without failing the rest`() {
         val checker = FakeHealthChecker()
 
-        val results = service(checker).healthCheckBatch(listOf("example.com", "ftp://example.com", "https://wwwgooglecom"))
+        val results = service(
+            checker,
+        ).healthCheckBatch(listOf("example.com", "ftp://example.com", "https://wwwgooglecom"))
 
         assertThat(results[0].status).isEqualTo(HealthStatus.UP)
         assertThat(results.drop(1)).allSatisfy {

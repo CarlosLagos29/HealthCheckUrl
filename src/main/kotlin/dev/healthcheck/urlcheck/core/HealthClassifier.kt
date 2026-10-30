@@ -8,10 +8,7 @@ import java.io.InterruptedIOException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 
-data class Classification(
-    val status: HealthStatus,
-    val reason: HealthReason,
-)
+data class Classification(val status: HealthStatus, val reason: HealthReason)
 
 object HealthClassifier {
 

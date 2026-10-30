@@ -61,18 +61,23 @@ class HealthCheckService(
 
         LOG.debug(
             "Checked {}: status={} reason={} httpStatus={} finalUrl={} redirects={} latencyMs={}",
-            result.url, result.status, result.reason, result.httpStatus, result.finalUrl, result.redirects, result.latencyMs,
+            result.url,
+            result.status,
+            result.reason,
+            result.httpStatus,
+            result.finalUrl,
+            result.redirects,
+            result.latencyMs,
         )
         return result
     }
 
-    private fun headRequest(url: HttpUrl): Request =
-        Request.Builder()
-            .url(url)
-            .head()
-            .header("User-Agent", USER_AGENT)
-            .header("Accept", "*/*")
-            .build()
+    private fun headRequest(url: HttpUrl): Request = Request.Builder()
+        .url(url)
+        .head()
+        .header("User-Agent", USER_AGENT)
+        .header("Accept", "*/*")
+        .build()
 
     private fun elapsedMs(start: Long): Long = Duration.ofNanos(System.nanoTime() - start).toMillis()
 }
