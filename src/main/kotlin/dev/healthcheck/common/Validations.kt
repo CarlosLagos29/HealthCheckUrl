@@ -1,7 +1,6 @@
 package dev.healthcheck.common
 
-fun isIpLiteral(host: String): Boolean =
-    ':' in host || host.all { it.isDigit() || it == '.' }
+fun isIpLiteral(host: String): Boolean = ':' in host || host.all { it.isDigit() || it == '.' }
 
 fun isDomain(host: String): Boolean {
     val tld = host.substringAfterLast('.', missingDelimiterValue = "")

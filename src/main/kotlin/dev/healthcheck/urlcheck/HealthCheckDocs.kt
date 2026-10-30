@@ -15,7 +15,8 @@ import org.springframework.http.ProblemDetail
     summary = "Check a single URL",
     description = "Sends a request to the URL and reports whether it is UP, DOWN, BLOCKED (the site answered " +
         "401/403, so its health is unknown) or REJECTED (the API refused to check it). Without a scheme, https:// " +
-        "is assumed. Private addresses and ports other than 80/443 are rejected. A URL checked in the last 5 minutes is served " +
+        "is assumed. Private addresses and ports other than 80/443 are " +
+        "rejected. A URL checked in the last 5 minutes is served " +
         "from cache; a site checked too often recently is REJECTED with reason HOST_RATE_LIMITED.",
 )
 @ApiResponse(
@@ -41,7 +42,8 @@ import org.springframework.http.ProblemDetail
 )
 @ApiResponse(
     responseCode = "429",
-    description = "Rate limit exceeded (per client IP or global). The Retry-After header says how many seconds to wait.",
+    description = "Rate limit exceeded (per client IP or global). The " +
+        "Retry-After header says how many seconds to wait.",
     content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class HealthCheckDocs
@@ -73,7 +75,8 @@ annotation class HealthCheckDocs
 )
 @ApiResponse(
     responseCode = "429",
-    description = "Rate limit exceeded (per client IP or global). The Retry-After header says how many seconds to wait.",
+    description = "Rate limit exceeded (per client IP or global). The " +
+        "Retry-After header says how many seconds to wait.",
     content = [Content(mediaType = "application/problem+json", schema = Schema(implementation = ProblemDetail::class))],
 )
 annotation class BatchHealthCheckDocs

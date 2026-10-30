@@ -23,20 +23,19 @@ class SwaggerConfig : WebMvcConfigurer {
     }
 
     @Bean
-    fun openApi(buildProperties: BuildProperties?): OpenAPI =
-        OpenAPI()
-            .info(
-                Info()
-                    .title("HealthCheckUrl API")
-                    .version(buildProperties?.version ?: "dev")
-                    .description(
-                        "Checks whether a URL is alive and explains why when it is not. " +
-                            "Built so it cannot be abused against third parties: private addresses and ports other " +
-                            "than 80/443 are rejected (also on every redirect), results are cached for 5 minutes and " +
-                            "requests are rate limited per client IP, globally and per target site.",
-                    )
-                    .contact(Contact().name("Carlos Lagos").url("https://github.com/CarlosLagos29"))
-                    .license(License().name("MIT").url("$REPOSITORY_URL/blob/master/LICENSE")),
-            )
-            .externalDocs(ExternalDocumentation().description("Source code").url(REPOSITORY_URL))
+    fun openApi(buildProperties: BuildProperties?): OpenAPI = OpenAPI()
+        .info(
+            Info()
+                .title("HealthCheckUrl API")
+                .version(buildProperties?.version ?: "dev")
+                .description(
+                    "Checks whether a URL is alive and explains why when it is not. " +
+                        "Built so it cannot be abused against third parties: private addresses and ports other " +
+                        "than 80/443 are rejected (also on every redirect), results are cached for 5 minutes and " +
+                        "requests are rate limited per client IP, globally and per target site.",
+                )
+                .contact(Contact().name("Carlos Lagos").url("https://github.com/CarlosLagos29"))
+                .license(License().name("MIT").url("$REPOSITORY_URL/blob/master/LICENSE")),
+        )
+        .externalDocs(ExternalDocumentation().description("Source code").url(REPOSITORY_URL))
 }

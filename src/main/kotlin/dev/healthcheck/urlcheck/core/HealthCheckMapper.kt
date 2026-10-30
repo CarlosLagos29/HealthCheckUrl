@@ -21,7 +21,12 @@ object HealthCheckMapper {
         )
     }
 
-    fun fromFailure(url: HttpUrl, failure: FollowFailedException, latencyMs: Long, checkedAt: Instant): HealthCheckResult {
+    fun fromFailure(
+        url: HttpUrl,
+        failure: FollowFailedException,
+        latencyMs: Long,
+        checkedAt: Instant,
+    ): HealthCheckResult {
         val classification = HealthClassifier.classifyError(failure.cause)
         return HealthCheckResult(
             url = url.toString(),
@@ -34,36 +39,33 @@ object HealthCheckMapper {
         )
     }
 
-    fun fromHostRateLimited(url: HttpUrl, checkedAt: Instant): HealthCheckResult =
-        HealthCheckResult(
-            url = url.toString(),
-            finalUrl = url.toString(),
-            status = HealthStatus.REJECTED,
-            latencyMs = 0,
-            redirects = 0,
-            reason = HealthReason.HOST_RATE_LIMITED,
-            checkedAt = checkedAt,
-        )
+    fun fromHostRateLimited(url: HttpUrl, checkedAt: Instant): HealthCheckResult = HealthCheckResult(
+        url = url.toString(),
+        finalUrl = url.toString(),
+        status = HealthStatus.REJECTED,
+        latencyMs = 0,
+        redirects = 0,
+        reason = HealthReason.HOST_RATE_LIMITED,
+        checkedAt = checkedAt,
+    )
 
-    fun fromInvalidUrl(rawUrl: String, checkedAt: Instant): HealthCheckResult =
-        HealthCheckResult(
-            url = rawUrl,
-            finalUrl = rawUrl,
-            status = HealthStatus.INVALID,
-            latencyMs = 0,
-            redirects = 0,
-            reason = HealthReason.INVALID_URL,
-            checkedAt = checkedAt,
-        )
+    fun fromInvalidUrl(rawUrl: String, checkedAt: Instant): HealthCheckResult = HealthCheckResult(
+        url = rawUrl,
+        finalUrl = rawUrl,
+        status = HealthStatus.INVALID,
+        latencyMs = 0,
+        redirects = 0,
+        reason = HealthReason.INVALID_URL,
+        checkedAt = checkedAt,
+    )
 
-    fun fromBatchTimeout(url: String, latencyMs: Long, checkedAt: Instant): HealthCheckResult =
-        HealthCheckResult(
-            url = url,
-            finalUrl = url,
-            status = HealthStatus.DOWN,
-            latencyMs = latencyMs,
-            redirects = 0,
-            reason = HealthReason.TIMEOUT,
-            checkedAt = checkedAt,
-        )
+    fun fromBatchTimeout(url: String, latencyMs: Long, checkedAt: Instant): HealthCheckResult = HealthCheckResult(
+        url = url,
+        finalUrl = url,
+        status = HealthStatus.DOWN,
+        latencyMs = latencyMs,
+        redirects = 0,
+        reason = HealthReason.TIMEOUT,
+        checkedAt = checkedAt,
+    )
 }

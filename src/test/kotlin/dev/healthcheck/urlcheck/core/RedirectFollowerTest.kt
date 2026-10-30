@@ -23,8 +23,13 @@ class RedirectFollowerTest {
     private val server = MockWebServer()
 
     private val fakeDns = object : Dns {
-        override fun lookup(hostname: String): List<InetAddress> =
-            if (hostname == "internal.test") listOf(InetAddress.getByName("10.0.0.1")) else Dns.SYSTEM.lookup(hostname)
+        override fun lookup(hostname: String): List<InetAddress> = if (hostname ==
+            "internal.test"
+        ) {
+            listOf(InetAddress.getByName("10.0.0.1"))
+        } else {
+            Dns.SYSTEM.lookup(hostname)
+        }
     }
 
     private fun follower(
@@ -194,11 +199,12 @@ class RedirectFollowerTest {
 
     @Test
     fun `fails when the total timeout runs out across slow redirects`() {
-        repeat(5) {
-            server.enqueue(
-                MockResponse.Builder().code(302).addHeader("Location", "/next").headersDelay(300, TimeUnit.MILLISECONDS).build(),
-            )
-        }
+        val slowRedirect = MockResponse.Builder()
+            .code(302)
+            .addHeader("Location", "/next")
+            .headersDelay(300, TimeUnit.MILLISECONDS)
+            .build()
+        repeat(5) { server.enqueue(slowRedirect) }
 
         assertThatThrownBy { follower(totalTimeout = Duration.ofMillis(700)).execute(startRequest()) }
             .isInstanceOf(FollowFailedException::class.java)
@@ -206,5 +212,26 @@ class RedirectFollowerTest {
             .isInstanceOf(InterruptedIOException::class.java)
             .hasMessage("timeout")
         assertThat(server.requestCount).isLessThan(5)
+    }
+
+    @Test
+    fun `stops at a redirect whose Location cannot be resolved`() {
+        server.enqueue(redirectTo("http://"))
+
+        val result = follower().execute(startRequest())
+
+        assertThat(result.code).isEqualTo(302)
+        assertThat(result.finalUrl).isEqualTo(server.url("/start"))
+        assertThat(result.redirects).isEqualTo(0)
+    }
+
+    @Test
+    fun `does not send a hop once the total timeout is already used up`() {
+        assertThatThrownBy { follower(totalTimeout = Duration.ZERO).execute(startRequest()) }
+            .isInstanceOf(FollowFailedException::class.java)
+            .cause()
+            .isInstanceOf(InterruptedIOException::class.java)
+            .hasMessage("timeout")
+        assertThat(server.requestCount).isEqualTo(0)
     }
 }

@@ -63,8 +63,7 @@ class SafeDnsTest {
         val failingDns = SafeDns(
             IpAddressValidator(),
             object : Dns {
-                override fun lookup(hostname: String): List<InetAddress> =
-                    throw UnknownHostException(hostname)
+                override fun lookup(hostname: String): List<InetAddress> = throw UnknownHostException(hostname)
             },
         )
 

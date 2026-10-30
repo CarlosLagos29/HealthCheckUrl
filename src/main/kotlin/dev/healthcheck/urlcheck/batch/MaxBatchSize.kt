@@ -16,7 +16,8 @@ annotation class MaxBatchSize(
     val payload: Array<KClass<out Payload>> = [],
 )
 
-class MaxBatchSizeValidator(private val properties: HealthCheckProperties) : ConstraintValidator<MaxBatchSize, List<*>> {
+class MaxBatchSizeValidator(private val properties: HealthCheckProperties) :
+    ConstraintValidator<MaxBatchSize, List<*>> {
 
     override fun isValid(value: List<*>?, context: ConstraintValidatorContext): Boolean {
         val max = properties.batch.maxUrls

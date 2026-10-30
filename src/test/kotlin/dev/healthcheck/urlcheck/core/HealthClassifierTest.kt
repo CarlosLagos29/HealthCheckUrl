@@ -21,7 +21,9 @@ class HealthClassifierTest {
     @ParameterizedTest
     @ValueSource(ints = [200, 304])
     fun `treats 2xx and final 3xx as UP`(code: Int) {
-        assertThat(HealthClassifier.classifyHttpCode(code)).isEqualTo(Classification(HealthStatus.UP, HealthReason.SUCCESS))
+        assertThat(
+            HealthClassifier.classifyHttpCode(code),
+        ).isEqualTo(Classification(HealthStatus.UP, HealthReason.SUCCESS))
     }
 
     @ParameterizedTest
@@ -52,7 +54,10 @@ class HealthClassifierTest {
         @JvmStatic
         fun errors(): List<Arguments> = listOf(
             Arguments.of(
-                RejectedAddressException(HealthReason.PRIVATE_ADDRESS, "Host 10.0.0.1 is a private address, rejected by the API"),
+                RejectedAddressException(
+                    HealthReason.PRIVATE_ADDRESS,
+                    "Host 10.0.0.1 is a private address, rejected by the API",
+                ),
                 Classification(HealthStatus.REJECTED, HealthReason.PRIVATE_ADDRESS),
             ),
             Arguments.of(
@@ -64,7 +69,10 @@ class HealthClassifierTest {
                 Classification(HealthStatus.DOWN, HealthReason.TOO_MANY_REDIRECTS),
             ),
             Arguments.of(InterruptedIOException("timeout"), Classification(HealthStatus.DOWN, HealthReason.TIMEOUT)),
-            Arguments.of(UnknownHostException("nope.invalid"), Classification(HealthStatus.DOWN, HealthReason.DNS_ERROR)),
+            Arguments.of(
+                UnknownHostException("nope.invalid"),
+                Classification(HealthStatus.DOWN, HealthReason.DNS_ERROR),
+            ),
             Arguments.of(SSLHandshakeException("expired"), Classification(HealthStatus.DOWN, HealthReason.TLS_ERROR)),
             Arguments.of(ConnectException("refused"), Classification(HealthStatus.DOWN, HealthReason.CONNECTION_ERROR)),
         )

@@ -8,19 +8,12 @@ import java.io.InterruptedIOException
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-data class FollowedResponse(
-    val code: Int,
-    val finalUrl: HttpUrl,
-    val redirects: Int,
-)
+data class FollowedResponse(val code: Int, val finalUrl: HttpUrl, val redirects: Int)
 
 class TooManyRedirectsException(maxRedirects: Int) : IOException("More than $maxRedirects redirects")
 
-class FollowFailedException(
-    val lastUrl: HttpUrl,
-    val redirects: Int,
-    override val cause: IOException,
-) : IOException(cause.message, cause)
+class FollowFailedException(val lastUrl: HttpUrl, val redirects: Int, override val cause: IOException) :
+    IOException(cause.message, cause)
 
 class RedirectFollower(
     private val client: OkHttpClient,

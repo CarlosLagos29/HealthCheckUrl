@@ -36,17 +36,15 @@ class HealthCheckControllerTest {
     @MockitoBean
     private lateinit var batchHealthChecker: BatchHealthChecker
 
-    private fun postCheck(body: String): ResultActionsDsl =
-        mockMvc.post("/api/v1/health-checks") {
-            contentType = MediaType.APPLICATION_JSON
-            content = body
-        }
+    private fun postCheck(body: String): ResultActionsDsl = mockMvc.post("/api/v1/health-checks") {
+        contentType = MediaType.APPLICATION_JSON
+        content = body
+    }
 
-    private fun postBatch(body: String): ResultActionsDsl =
-        mockMvc.post("/api/v1/health-checks/batch") {
-            contentType = MediaType.APPLICATION_JSON
-            content = body
-        }
+    private fun postBatch(body: String): ResultActionsDsl = mockMvc.post("/api/v1/health-checks/batch") {
+        contentType = MediaType.APPLICATION_JSON
+        content = body
+    }
 
     private fun invalidResult() = HealthCheckResult(
         url = "ftp://example.com",
@@ -132,7 +130,9 @@ class HealthCheckControllerTest {
 
     @Test
     fun `hides internal details on unexpected errors`() {
-        given(healthChecker.healthCheck(anyString(), anyString())).willThrow(IllegalStateException("secret internal detail"))
+        given(
+            healthChecker.healthCheck(anyString(), anyString()),
+        ).willThrow(IllegalStateException("secret internal detail"))
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isInternalServerError() }
@@ -193,7 +193,9 @@ class HealthCheckControllerTest {
 
     @Test
     fun `answers 429 with Retry-After when the rate limit is exceeded`() {
-        given(healthChecker.healthCheck(anyString(), anyString())).willThrow(RateLimitExceededException(Duration.ofMillis(1_500)))
+        given(
+            healthChecker.healthCheck(anyString(), anyString()),
+        ).willThrow(RateLimitExceededException(Duration.ofMillis(1_500)))
 
         postCheck("""{"url": "example.com"}""").andExpect {
             status { isTooManyRequests() }

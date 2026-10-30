@@ -24,7 +24,11 @@ class UrlCache(private val ttl: Duration) {
     fun get(url: HttpUrl): HealthCheckResult? {
         val result = results.getIfPresent(url.toString())
         if (result != null) {
-            LOG.debug("Cache hit: url={} checkedAgo={}s", url, Duration.between(result.checkedAt, Instant.now()).toSeconds())
+            LOG.debug(
+                "Cache hit: url={} checkedAgo={}s",
+                url,
+                Duration.between(result.checkedAt, Instant.now()).toSeconds(),
+            )
         }
         return result
     }
